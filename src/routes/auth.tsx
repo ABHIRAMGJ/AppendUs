@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { sendSignupCode, verifyCodeAndCreateAccount } from "@/server/signup.functions";
+import { sendSignupCode, verifyCodeAndCreateAccount } from "@/lib/signup.functions";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
