@@ -13,6 +13,7 @@ import { ThemeToggle } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { useProfile } from "@/lib/data";
+import { EmailGate } from "@/components/app/EmailGate";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -40,6 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const initials = name.split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase();
 
   return (
+    <EmailGate>
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <Sidebar collapsible="icon">
@@ -107,6 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
     </SidebarProvider>
+    </EmailGate>
   );
 }
 
