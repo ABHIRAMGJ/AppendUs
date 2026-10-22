@@ -1,37 +1,39 @@
-# AI CareerOS — Phase 1: Premium foundation + two working AI chatbots
+# AI CareerOS — Full platform UI (light + dark) with working AI chatbots
 
-The uploaded brief covers dozens of modules. Building them all at once would produce a pretty but non-working prototype (which the brief forbids). Phase 1 delivers a polished, professional product shell plus the two chatbots fully working. Later phases add each module (Resume Analyzer with RAG, Learning Planner, Interview Studio, Job Tracker, etc.) one at a time.
+Matches your showcase image: blue-to-violet brand, rounded cards, clean dashboards, every page in both light and dark mode with a toggle in the header (remembers your choice, follows system by default).
 
-## Visual direction
-- "Editorial tech" look: deep ink navy background sections, warm ivory surfaces, a single electric-teal accent with amber highlights. No purple gradients.
-- Fonts: Sora (headings) + Manrope (body).
-- Subtle grid textures, soft shadows, smooth entrance animations, light and dark mode.
-- Fully responsive (mobile, tablet, desktop), keyboard accessible.
+## Design
+- Light: soft white/lavender surfaces, royal blue primary, violet accent. Dark: deep navy surfaces, glowing blue/violet accents.
+- Fonts: Sora (headings) + Manrope (body). Rounded 14px cards, soft shadows, progress rings, small charts.
+- AI-generated hero illustration (student with laptop + floating "Apply/Learn" chips) like your image.
+- Fully responsive with collapsible sidebar.
 
 ## Pages
-1. Landing page (/) — hero with headline and call to action, the career journey ("Goal → Gaps → Learn → Prove → Interview → Apply"), module showcase, skills & domains coverage, how the AI works (evidence over claims), FAQ, footer.
-2. Sign up / Sign in (email + Google).
-3. Dashboard (signed in) — sidebar navigation listing every module; modules not built yet are clearly marked "Coming soon" (no fake data, no dead buttons).
-4. Mentor page — full-screen CareerOS AI Mentor with saved conversation threads.
-5. Profile — name, education level, target role, current skills, weekly time available (used by the Mentor to personalise answers).
+Public:
+1. Landing — hero, stats, features, career journey, modules, FAQ, footer.
+2. Sign up / Sign in (email + Google), Email verification screen, Forgot/Reset password.
 
-## Chatbot 1 — Global Assistant
-- Floating button on every page; slide-out chat panel.
-- Knows the platform's modules, what's available vs. coming soon, and the current page.
-- Quick actions: "Find a feature", "Explain this page", "Help me troubleshoot".
-- Answers include clickable links to pages. Streaming replies, clear chat. One conversation per browser.
+Signed-in (sidebar app):
+3. Dashboard — welcome, today's progress, module shortcuts, growth chart, Mentor card.
+4. Career Path Finder — search + category filters (Technology, Business, Healthcare, Creative, Government), role cards with demand, salary range, timeline; detail page per role.
+5. Learning Plan — roadmap phases (accordion), daily plan, progress, resources.
+6. Resume Analyzer — upload PDF/DOCX + target role; AI results: overall score, sub-scores, strengths, areas to improve, keywords.
+7. Mock Interviews — choose role, type, difficulty; AI asks questions and gives feedback.
+8. Skill Assessments / Coding Practice — problem list, code editor, AI review of solutions.
+9. Projects / Portfolio Builder — add and manage projects.
+10. Job Tracker — your applications with status (Applied, Interview, Offer, Rejected), counts.
+11. Company Preparation — company list with interview process tips (AI-generated, marked as such).
+12. AI Mentor — full-page coach with saved conversation threads.
+13. Community — marked "Coming soon" (needs moderation/safety work first).
+14. Settings — profile, theme, account, delete data.
 
-## Chatbot 2 — CareerOS AI Mentor
-- Personal career coach using the user's saved profile.
-- Covers the full skills list from your document (languages, DSA, web, data/AI, cloud/DevOps, security, career paths after 10th/Inter/Diploma/B.Tech/MBA etc.).
-- Teaches, quizzes, builds study plans, mock interview questions; says clearly when it is unsure.
-- Threaded conversations saved to your account, each with its own link; rename/delete threads.
+Global Assistant: floating chat button on every page with quick actions and links to pages.
+
+## Honesty rules (from your brief)
+No fake job listings, salaries labelled as estimates, no fake scores — scores come only from real AI analysis of your resume. Empty states instead of made-up data.
 
 ## Technical details
-- Lovable Cloud: auth, profiles, mentor_threads, mentor_messages tables with per-user access rules.
-- Lovable AI Gateway, default model, streamed responses via server routes; keys server-side only.
-- AI Elements chat components with markdown rendering, suggested prompts, stop button, error states (credits/rate limit shown clearly).
-- Per-route SEO titles/descriptions.
-
-## Later phases (not in this build)
-Resume Analyzer (upload + RAG), Learning Planner, Skill Assessments, Interview Studio, Portfolio Builder, Job Tracker, Company Prep, admin console, CI/CD and testing hardening.
+- Lovable Cloud: auth, profiles, career goals, learning plans, resumes (private file storage), analyses, interviews, projects, job applications, mentor threads/messages — all per-user access rules.
+- Lovable AI (default model, streamed) for Mentor, Assistant, resume analysis, interviews, code review, plan generation.
+- Theme via `.dark` class + semantic tokens; no hardcoded colors.
+- Built in steps: design system + landing + auth → app shell + dashboard → chatbots → each module.
