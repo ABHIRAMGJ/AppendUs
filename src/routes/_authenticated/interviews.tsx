@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -66,40 +66,103 @@ async function readResume(f: File) {
   return f.text();
 }
 
-function speak(text: string) {
-  if (typeof window === "undefined" || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate = 0.98;
-  window.speechSynthesis.speak(u);
+function speak(text: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return resolve();
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.98; u.lang = "en-IN";
+    u.onend = () => resolve(); u.onerror = () => resolve();
+    window.speechSynthesis.speak(u);
+  });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Rec = any;
-function useDictation(onText: (t: string) => void) {
+function useDictation(onFinal: (t: string) => void) {
   const [listening, setListening] = useState(false);
+  const [interim, setInterim] = useState("");
   const rec = useRef<Rec>(null);
+  const want = useRef(false);
+  const cb = useRef(onFinal); cb.current = onFinal;
   const supported = typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
-  function start() {
+  function boot() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const W = window as any;
     const SR = W.SpeechRecognition ?? W.webkitSpeechRecognition;
-    if (!SR) { toast.error("Voice input isn't supported in this browser. Use Chrome or Edge, or type your answer."); return; }
-    window.speechSynthesis?.cancel();
+    if (!SR) return;
     const r = new SR();
-    r.lang = "en-IN"; r.continuous = true; r.interimResults = false;
+    r.lang = "en-IN"; r.continuous = true; r.interimResults = true;
     r.onresult = (e: Rec) => {
-      let t = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) t += e.results[i][0].transcript + " ";
-      if (t) onText(t);
+      let fin = "", mid = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) fin += e.results[i][0].transcript + " "; else mid += e.results[i][0].transcript;
+      }
+      if (fin) cb.current(fin);
+      setInterim(mid);
     };
-    r.onerror = (e: Rec) => { if (e.error === "not-allowed") toast.error("Microphone permission was denied."); };
-    r.onend = () => setListening(false);
-    r.start(); rec.current = r; setListening(true);
+    r.onerror = (e: Rec) => { if (e.error === "not-allowed") { want.current = false; toast.error("Microphone permission was denied."); } };
+    r.onend = () => { setInterim(""); if (want.current) { try { r.start(); } catch { /* ignore */ } } else setListening(false); };
+    try { r.start(); } catch { /* ignore */ }
+    rec.current = r; setListening(true);
   }
-  function stop() { rec.current?.stop(); setListening(false); }
-  useEffect(() => () => rec.current?.stop(), []);
-  return { listening, start, stop, supported };
+  function start() {
+    if (!supported) { toast.error("Voice answers need Chrome or Edge."); return; }
+    want.current = true; if (!rec.current) boot(); else setListening(true);
+  }
+  function stop() { want.current = false; rec.current?.stop(); rec.current = null; setListening(false); setInterim(""); }
+  useEffect(() => () => { want.current = false; rec.current?.stop(); }, []);
+  return { listening, interim, start, stop, supported };
+}
+
+function useProctor(stream: MediaStream, video: React.RefObject<HTMLVideoElement | null>, onBlocked: () => void) {
+  const [tabSwitches, setTabSwitches] = useState(0);
+  const [warning, setWarning] = useState("");
+  const checks = useRef({ frames: 0, noFace: 0, multiple: 0 });
+  const blocked = useRef(onBlocked); blocked.current = onBlocked;
+  useEffect(() => { if (video.current) { video.current.srcObject = stream; void video.current.play().catch(() => {}); } }, [stream, video]);
+  useEffect(() => {
+    const h = () => { if (document.hidden) { setTabSwitches((n) => n + 1); toast.warning("Tab switch recorded. Stay on the interview."); } };
+    document.addEventListener("visibilitychange", h);
+    return () => document.removeEventListener("visibilitychange", h);
+  }, []);
+  useEffect(() => {
+    let busy = false;
+    const t = setInterval(async () => {
+      const v = video.current;
+      if (busy || !v || !v.videoWidth) return;
+      busy = true;
+      try {
+        const c = document.createElement("canvas");
+        c.width = 480; c.height = Math.round((480 * v.videoHeight) / v.videoWidth);
+        c.getContext("2d")!.drawImage(v, 0, 0, c.width, c.height);
+        const r = await call<{ phone_visible: boolean; face_visible: boolean; multiple_people: boolean }>({ action: "proctor", image: c.toDataURL("image/jpeg", 0.6) });
+        checks.current.frames++;
+        if (r.phone_visible) { blocked.current(); return; }
+        if (!r.face_visible) { checks.current.noFace++; setWarning("Your face is not visible. Stay in front of the camera."); }
+        else if (r.multiple_people) { checks.current.multiple++; setWarning("More than one person detected."); }
+        else setWarning("");
+      } catch { /* skip frame */ } finally { busy = false; }
+    }, 12000);
+    return () => clearInterval(t);
+  }, [video]);
+  return { tabSwitches, warning, report: () => ({ tab_switches: tabSwitches, ...checks.current }) };
+}
+
+function CameraCard({ video, warning, tabSwitches, clock }: { video: React.RefObject<HTMLVideoElement | null>; warning: string; tabSwitches: number; clock: string }) {
+  return (
+    <div className="space-y-4">
+      <div className="surface overflow-hidden">
+        <video ref={video} muted playsInline className="aspect-video w-full -scale-x-100 bg-muted object-cover" />
+        <div className="flex items-center justify-between p-3 text-xs"><span className="flex items-center gap-2"><span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />Proctoring on</span><span className="flex items-center gap-1"><Timer className="h-3 w-3" />{clock}</span></div>
+      </div>
+      {warning && <div className="surface border-destructive p-3 text-sm text-destructive">{warning}</div>}
+      <div className="surface space-y-1 p-4 text-xs text-muted-foreground">
+        <p className="font-semibold text-foreground">Rules</p>
+        <p>• Keep your face in view.</p><p>• No mobile phones — if one is clearly seen, you are not eligible.</p><p>• Tab switches recorded: <span className="font-semibold text-foreground">{tabSwitches}</span></p>
+      </div>
+    </div>
+  );
 }
 
 function useClock(running: boolean) {
@@ -140,9 +203,9 @@ function Flow() {
     if (!setup.resume) { toast.error("Please upload your resume."); return; }
     if (!setup.role.trim()) { toast.error("Please enter your target role."); return; }
     let cam: MediaStream | null = null;
-    if (setup.mode === "coding") {
-      try { cam = await navigator.mediaDevices.getUserMedia({ video: true }); setStream(cam); }
-      catch { toast.error("Camera access is required for the coding round."); return; }
+    {
+      try { cam = await navigator.mediaDevices.getUserMedia({ video: true, audio: setup.mode === "real" }); cam.getAudioTracks().forEach((t) => t.stop()); setStream(cam); }
+      catch { toast.error("Camera and microphone access are required for the interview."); return; }
     }
     setStage("loading");
     try {
@@ -169,7 +232,9 @@ function Flow() {
   if (stage === "setup") return <SetupForm setup={setup} setSetup={setSetup} onStart={start} />;
   if (stage === "loading") return <div className="surface p-10 text-center"><Shimmer>Preparing questions from your resume and role...</Shimmer></div>;
   if (stage === "evaluating") return <div className="surface p-10 text-center"><Shimmer>Analysing your answers and communication...</Shimmer></div>;
-  if (stage === "real") return <RealRound qs={realQs} onSubmit={(a) => submit(realQs, a)} />;
+  if (stage === "real" && stream) return <RealRound qs={realQs} stream={stream}
+    onBlocked={() => { stopCam(); window.speechSynthesis?.cancel(); setStage("blocked"); }}
+    onSubmit={(a, p) => submit(realQs, a, p)} />;
   if (stage === "coding" && stream) return <CodingRound qs={codeQs} stream={stream}
     onBlocked={() => { stopCam(); setStage("blocked"); }}
     onSubmit={(a, p) => submit(codeQs, a, p)} />;
@@ -177,7 +242,7 @@ function Flow() {
     <div className="surface mx-auto max-w-xl p-10 text-center">
       <ShieldAlert className="mx-auto h-14 w-14 text-destructive" />
       <h2 className="mt-4 font-display text-2xl font-bold">You are not eligible</h2>
-      <p className="mt-2 text-sm text-muted-foreground">A mobile phone was clearly visible on camera during the coding round. Phones are not allowed. This attempt has ended.</p>
+      <p className="mt-2 text-sm text-muted-foreground">A mobile phone was clearly visible on camera during the interview. Phones are not allowed. This attempt has ended.</p>
       <Button className="mt-6" variant="outline" onClick={() => setStage("setup")}>Back to setup</Button>
     </div>
   );
@@ -197,7 +262,7 @@ function SetupForm({ setup, setSetup, onStart }: { setup: Setup; setSetup: (s: S
     } catch { toast.error("Couldn't read this file. Upload a text-based PDF, DOCX or TXT."); }
   }
   const modes: { id: Mode; icon: typeof Users; title: string; desc: string; points: string[] }[] = [
-    { id: "real", icon: Users, title: "Real Interview", desc: "Voice interview like a real panel", points: ["Intro & project explanation", "Role questions, OOPs, SQL, React (if in resume)", "Speak answers, skip any question", "Score %, feedback & English level"] },
+    { id: "real", icon: Users, title: "Real Interview", desc: "Voice interview like a real panel", points: ["Intro & project explanation", "Role questions, OOPs, SQL, React (if in resume)", "Camera on, mic listens automatically", "Timed answers, skip option, no going back", "Score %, feedback & English level"] },
     { id: "coding", icon: Code2, title: "Coding Interview", desc: "Proctored round with camera on", points: ["3 problems: Easy, Medium, Hard", "Camera must stay on", "Phone detected = not eligible", "Tab switches are recorded"] },
   ];
   return (
@@ -219,7 +284,7 @@ function SetupForm({ setup, setSetup, onStart }: { setup: Setup; setSetup: (s: S
           <ol className="mt-2 list-decimal space-y-1 pl-5">
             <li>Upload your resume and enter your target role, approx package and experience.</li>
             <li>Questions are generated only for your role and resume — nothing from other domains.</li>
-            <li>The interviewer reads each question aloud. Press the mic and speak, or type.</li>
+            <li>Camera stays on. The interviewer reads each question aloud, then the mic turns on automatically — just speak. Each answer has a 2-minute limit and you cannot go back.</li>
             <li>Skip if you don't know. Submit at the end to see every question, your answer, the ideal answer and your score.</li>
           </ol>
         </div>
@@ -238,51 +303,85 @@ function SetupForm({ setup, setSetup, onStart }: { setup: Setup; setSetup: (s: S
           <Select value={setup.exp} onValueChange={(v) => setSetup({ ...setup, exp: v })}><SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>{["Fresher", "0-1 years", "1-3 years", "3-5 years", "5+ years"].map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}</SelectContent></Select>
         </div>
-        <Button variant="hero" className="w-full" onClick={onStart}>{setup.mode === "coding" ? <><Camera /> Turn on camera & start</> : <><Mic /> Start interview</>}</Button>
+        <Button variant="hero" className="w-full" onClick={onStart}><><Camera /> Turn on camera & start</></Button>
       </div>
     </div>
   );
 }
 
-function RealRound({ qs, onSubmit }: { qs: RealQ[]; onSubmit: (a: Answer[]) => void }) {
+const ANSWER_SECONDS = 120;
+
+function RealRound({ qs, stream, onSubmit, onBlocked }: { qs: RealQ[]; stream: MediaStream; onSubmit: (a: Answer[], p: unknown) => void; onBlocked: () => void }) {
+  const video = useRef<HTMLVideoElement>(null);
+  const proc = useProctor(stream, video, onBlocked);
   const [i, setI] = useState(0);
-  const [answers, setAnswers] = useState<Answer[]>(() => qs.map((q) => ({ question: q.question, answer: "", skipped: false })));
+  const [phase, setPhase] = useState<"asking" | "answering">("asking");
+  const [left, setLeft] = useState(ANSWER_SECONDS);
+  const answers = useRef<Answer[]>(qs.map((q) => ({ question: q.question, answer: "", skipped: false })));
+  const [current, setCurrent] = useState("");
   const clock = useClock(true);
-  const dict = useDictation((t) => setAnswers((a) => a.map((x, k) => (k === i ? { ...x, answer: (x.answer + " " + t).trim(), skipped: false } : x))));
+  const dict = useDictation((t) => setCurrent((c) => (c + " " + t).trim()));
   const q = qs[i]!;
-  useEffect(() => { speak(q.question); }, [q.question]);
   const last = i === qs.length - 1;
+
+  useEffect(() => {
+    let alive = true;
+    setPhase("asking"); setCurrent(""); setLeft(ANSWER_SECONDS);
+    void speak(`${i === 0 ? "Let's begin. " : ""}${q.question}`).then(() => {
+      if (!alive) return;
+      setPhase("answering"); dict.start();
+    });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [i]);
+
   function go(skip: boolean) {
-    dict.stop();
-    const next = answers.map((x, k) => (k === i && skip ? { ...x, skipped: true, answer: "" } : x));
-    setAnswers(next);
-    if (last) onSubmit(next); else setI(i + 1);
+    dict.stop(); window.speechSynthesis?.cancel();
+    const text = (current + " " + dict.interim).trim();
+    answers.current[i] = { question: q.question, answer: skip ? "" : text, skipped: skip || !text };
+    if (last) onSubmit(answers.current, proc.report()); else setI(i + 1);
   }
+  const goRef = useRef(go); goRef.current = go;
+
+  useEffect(() => {
+    if (phase !== "answering") return;
+    const t = setInterval(() => setLeft((l) => {
+      if (l <= 1) { clearInterval(t); toast.info("Time's up for this question."); setTimeout(() => goRef.current(false), 0); return 0; }
+      return l - 1;
+    }), 1000);
+    return () => clearInterval(t);
+  }, [phase, i]);
+
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>Question {i + 1} of {qs.length}</span><span className="flex items-center gap-1"><Timer className="h-4 w-4" />{clock}</span>
-      </div>
-      <Progress value={((i + 1) / qs.length) * 100} />
-      <div className="surface space-y-5 p-6">
-        <div className="flex items-start justify-between gap-3">
+    <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>Question {i + 1} of {qs.length}</span>
+          <span className={cn("flex items-center gap-1 font-semibold", left <= 20 && phase === "answering" && "text-destructive")}><Timer className="h-4 w-4" />{phase === "answering" ? `${left}s left` : "Listen..."}</span>
+        </div>
+        <Progress value={((i + 1) / qs.length) * 100} />
+        <div className="surface space-y-5 p-6">
           <div><Badge variant="secondary">{q.section}</Badge><p className="mt-3 font-display text-xl font-semibold leading-snug">{q.question}</p></div>
-          <Button variant="ghost" size="icon" onClick={() => speak(q.question)} aria-label="Repeat question"><Volume2 /></Button>
-        </div>
-        <Textarea rows={7} value={answers[i]!.answer} placeholder="Press the mic and speak your answer, or type here..."
-          onChange={(e) => setAnswers(answers.map((x, k) => (k === i ? { ...x, answer: e.target.value, skipped: false } : x)))} />
-        <div className="flex flex-wrap items-center gap-3">
-          <Button variant={dict.listening ? "destructive" : "outline"} onClick={dict.listening ? dict.stop : dict.start}>
-            {dict.listening ? <><MicOff /> Stop speaking</> : <><Mic /> Speak answer</>}
-          </Button>
-          {dict.listening && <span className="flex items-center gap-2 text-sm text-destructive"><span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />Listening...</span>}
-          <div className="ml-auto flex gap-2">
-            <Button variant="ghost" onClick={() => go(true)}><SkipForward /> Skip</Button>
-            <Button variant="hero" onClick={() => go(false)}>{last ? "Submit interview" : <>Next <ArrowRight /></>}</Button>
+          <div className="min-h-40 rounded-xl border bg-muted/40 p-4 text-sm">
+            <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+              {phase === "asking" ? <><Volume2 className="h-4 w-4 text-primary" /> Interviewer is asking...</>
+                : dict.listening ? <><span className="h-2 w-2 animate-pulse rounded-full bg-destructive" /> Listening — speak your answer</>
+                : <><MicOff className="h-4 w-4" /> Mic off</>}
+            </div>
+            <p className="whitespace-pre-wrap">{current}<span className="text-muted-foreground"> {dict.interim}</span></p>
+            {phase === "answering" && !current && !dict.interim && <p className="text-muted-foreground">Your spoken answer will appear here.</p>}
           </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {phase === "answering" && !dict.listening && <Button variant="outline" onClick={dict.start}><Mic /> Turn mic back on</Button>}
+            <div className="ml-auto flex gap-2">
+              <Button variant="ghost" onClick={() => go(true)}><SkipForward /> Skip</Button>
+              <Button variant="hero" disabled={phase === "asking"} onClick={() => go(false)}>{last ? "Finish interview" : <>Done, next <ArrowRight /></>}</Button>
+            </div>
+          </div>
+          {!dict.supported && <p className="text-xs text-destructive">Voice answers need Chrome or Edge on a computer.</p>}
         </div>
-        {!dict.supported && <p className="text-xs text-muted-foreground">Voice input needs Chrome or Edge. You can still type your answers.</p>}
       </div>
+      <CameraCard video={video} warning={proc.warning} tabSwitches={proc.tabSwitches} clock={clock} />
     </div>
   );
 }
@@ -292,37 +391,8 @@ function CodingRound({ qs, stream, onSubmit, onBlocked }: { qs: CodeQ[]; stream:
   const [active, setActive] = useState(0);
   const [lang, setLang] = useState("JavaScript");
   const [code, setCode] = useState<string[]>(() => qs.map(() => ""));
-  const [tabSwitches, setTabSwitches] = useState(0);
-  const [warning, setWarning] = useState("");
-  const checks = useRef({ frames: 0, noFace: 0, multiple: 0 });
+  const proc = useProctor(stream, video, onBlocked);
   const clock = useClock(true);
-
-  useEffect(() => { if (video.current) { video.current.srcObject = stream; void video.current.play().catch(() => {}); } }, [stream]);
-  useEffect(() => {
-    const h = () => { if (document.hidden) { setTabSwitches((n) => n + 1); toast.warning("Tab switch recorded."); } };
-    document.addEventListener("visibilitychange", h);
-    return () => document.removeEventListener("visibilitychange", h);
-  }, []);
-  useEffect(() => {
-    let busy = false;
-    const t = setInterval(async () => {
-      const v = video.current;
-      if (busy || !v || !v.videoWidth) return;
-      busy = true;
-      try {
-        const c = document.createElement("canvas");
-        c.width = 480; c.height = Math.round((480 * v.videoHeight) / v.videoWidth);
-        c.getContext("2d")!.drawImage(v, 0, 0, c.width, c.height);
-        const r = await call<{ phone_visible: boolean; face_visible: boolean; multiple_people: boolean }>({ action: "proctor", image: c.toDataURL("image/jpeg", 0.6) });
-        checks.current.frames++;
-        if (r.phone_visible) { onBlocked(); return; }
-        if (!r.face_visible) { checks.current.noFace++; setWarning("Your face is not visible. Stay in front of the camera."); }
-        else if (r.multiple_people) { checks.current.multiple++; setWarning("More than one person detected."); }
-        else setWarning("");
-      } catch { /* skip this frame */ } finally { busy = false; }
-    }, 12000);
-    return () => clearInterval(t);
-  }, [onBlocked]);
 
   const q = qs[active]!;
   return (
@@ -340,20 +410,10 @@ function CodingRound({ qs, stream, onSubmit, onBlocked }: { qs: CodeQ[]; stream:
           onChange={(e) => setCode(code.map((c, k) => (k === active ? e.target.value : c)))} />
         <div className="flex justify-end gap-2">
           {active < qs.length - 1 && <Button variant="outline" onClick={() => setActive(active + 1)}>Next problem <ArrowRight /></Button>}
-          <Button variant="hero" onClick={() => onSubmit(qs.map((x, k) => ({ question: `${x.difficulty}: ${x.title}\n${x.statement}`, answer: code[k]!.trim() ? `[${lang}]\n${code[k]}` : "", skipped: !code[k]!.trim() })), { tab_switches: tabSwitches, ...checks.current })}>Submit all</Button>
+          <Button variant="hero" onClick={() => onSubmit(qs.map((x, k) => ({ question: `${x.difficulty}: ${x.title}\n${x.statement}`, answer: code[k]!.trim() ? `[${lang}]\n${code[k]}` : "", skipped: !code[k]!.trim() })), proc.report())}>Submit all</Button>
         </div>
       </div>
-      <div className="space-y-4">
-        <div className="surface overflow-hidden">
-          <video ref={video} muted playsInline className="aspect-video w-full -scale-x-100 bg-muted object-cover" />
-          <div className="flex items-center justify-between p-3 text-xs"><span className="flex items-center gap-2"><span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />Proctoring on</span><span className="flex items-center gap-1"><Timer className="h-3 w-3" />{clock}</span></div>
-        </div>
-        {warning && <div className="surface border-destructive p-3 text-sm text-destructive">{warning}</div>}
-        <div className="surface space-y-1 p-4 text-xs text-muted-foreground">
-          <p className="font-semibold text-foreground">Rules</p>
-          <p>• Keep your face in view.</p><p>• No mobile phones — if one is clearly seen, you are not eligible.</p><p>• Tab switches recorded: <span className="font-semibold text-foreground">{tabSwitches}</span></p>
-        </div>
-      </div>
+      <CameraCard video={video} warning={proc.warning} tabSwitches={proc.tabSwitches} clock={clock} />
     </div>
   );
 }
