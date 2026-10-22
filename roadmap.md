@@ -13,3 +13,4 @@
 - [x] Python + FastAPI AI service: all AI moved out of the app; scores recomputed in code, keywords verified against the resume, strict schema validation; 40 pytest tests, GitHub Actions CI, Dockerfile, docker-compose
 - [ ] Host the Python AI service publicly and set AI_SERVICE_URL there (it runs locally in the sandbox for now)
 - [x] Brighter mouse-connecting lines in background
+- [ ] Render live: blueprint ready (render.yaml); blocked on a database connection string reachable from Render, then set AI_SERVICE_URL
