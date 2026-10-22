@@ -110,9 +110,11 @@ async def complete_checked(
 
 
 async def user_id_from(request: Request) -> str | None:
+    """The caller's user id, or None when the bearer token is missing or stale."""
     from . import auth
 
-    return (await auth.user_from_token(auth.bearer(dict(request.headers)))) or None
+    user = await auth.user_from_token(auth.bearer(dict(request.headers)))
+    return str(user["user_id"]) if user else None
 
 
 def require_user_id(user_id: str | None) -> str:
