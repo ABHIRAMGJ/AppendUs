@@ -196,6 +196,36 @@ export type Database = {
         }
         Relationships: []
       }
+      resume_chunks: {
+        Row: {
+          analysis_id: string | null
+          content: string
+          created_at: string
+          embedding: string
+          id: string
+          metadata: Json
+          user_id: string
+        }
+        Insert: {
+          analysis_id?: string | null
+          content: string
+          created_at?: string
+          embedding: string
+          id?: string
+          metadata?: Json
+          user_id: string
+        }
+        Update: {
+          analysis_id?: string | null
+          content?: string
+          created_at?: string
+          embedding?: string
+          id?: string
+          metadata?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -225,6 +255,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_resume_chunks: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          content: string
+          id: string
+          similarity: number
+        }[]
       }
     }
     Enums: {

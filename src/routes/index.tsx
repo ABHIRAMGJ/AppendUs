@@ -6,7 +6,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/lib/theme";
-import hero from "@/assets/hero-student.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -122,56 +121,38 @@ function Landing() {
 
       <section className="relative overflow-hidden bg-gradient-hero">
         <div className="pointer-events-none absolute inset-0 grid-bg opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-semibold text-accent-foreground shadow-card">
-              <span className="h-2 w-2 rounded-full bg-success" /> AI-powered career platform
-            </span>
-            <h1 className="mt-6 text-4xl font-bold leading-[1.08] sm:text-5xl lg:text-6xl">
-              Your Complete <br />
-              <span className="text-gradient">Career Operating System</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              AI-powered guidance, learning, resume, interviews, jobs, projects and more. Everything you need for a successful career — in one place.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild variant="hero" size="lg">
-                <Link to="/auth" search={{ mode: "signup" }}>Explore Careers <ArrowRight /></Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-full">
-                <a href="#features">See features</a>
-              </Button>
-            </div>
-            <div className="mt-10 grid max-w-lg grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { icon: Users, v: "12+", l: "Modules" },
-                { icon: Compass, v: "100+", l: "Career paths" },
-                { icon: Award, v: "Free", l: "To start" },
-                { icon: Headphones, v: "24/7", l: "AI support" },
-              ].map((s) => (
-                <div key={s.l} className="surface p-3 text-center">
-                  <s.icon className="mx-auto h-5 w-5 text-primary" />
-                  <p className="mt-1 font-display text-lg font-bold">{s.v}</p>
-                  <p className="text-xs text-muted-foreground">{s.l}</p>
-                </div>
-              ))}
-            </div>
+        <div className="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 lg:py-28">
+          <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-semibold text-accent-foreground shadow-card">
+            <span className="h-2 w-2 rounded-full bg-success" /> AI-powered career platform
+          </span>
+          <h1 className="mt-6 text-4xl font-bold leading-[1.08] sm:text-5xl lg:text-6xl">
+            Your Complete <br />
+            <span className="text-gradient">Career Operating System</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
+            AI-powered guidance, learning, resume, interviews, jobs, projects and more. Everything you need for a successful career — in one place.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button asChild variant="hero" size="lg">
+              <Link to="/auth" search={{ mode: "signup" }}>Explore Careers <ArrowRight /></Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="rounded-full">
+              <a href="#features">See features</a>
+            </Button>
           </div>
-          <div className="relative mx-auto w-full max-w-lg">
-            <div className="absolute -inset-6 rounded-[2.5rem] bg-gradient-primary opacity-25 blur-3xl" />
-            <img
-              src={hero}
-              alt="Student holding a laptop surrounded by career and learning interface panels"
-              width={1024}
-              height={1024}
-              className="relative aspect-square w-full rounded-[2rem] border object-cover shadow-2xl"
-            />
-            <div className="surface animate-float absolute -left-4 top-10 hidden items-center gap-2 px-3 py-2 text-sm font-semibold sm:flex">
-              <FileText className="h-4 w-4 text-primary" /> Resume score 78/100
-            </div>
-            <div className="surface animate-float absolute -right-4 bottom-12 hidden items-center gap-2 px-3 py-2 text-sm font-semibold [animation-delay:1.5s] sm:flex">
-              <GraduationCap className="h-4 w-4 text-violet" /> Plan: Week 3 of 24
-            </div>
+          <div className="mx-auto mt-10 grid max-w-lg grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { icon: Users, v: "12+", l: "Modules" },
+              { icon: Compass, v: "100+", l: "Career paths" },
+              { icon: Award, v: "Free", l: "To start" },
+              { icon: Headphones, v: "24/7", l: "AI support" },
+            ].map((s) => (
+              <div key={s.l} className="surface p-3 text-center">
+                <s.icon className="mx-auto h-5 w-5 text-primary" />
+                <p className="mt-1 font-display text-lg font-bold">{s.v}</p>
+                <p className="text-xs text-muted-foreground">{s.l}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
