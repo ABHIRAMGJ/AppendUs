@@ -2,14 +2,16 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Activity, Flag, ScrollText, Search, ShieldCheck, ShieldPlus, ShieldX } from "lucide-react";
+import { Activity, Flag, Pencil, ScrollText, Search, ShieldCheck, ShieldPlus, ShieldX, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageHeader } from "@/components/app/AppShell";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -25,7 +27,7 @@ function useAll() {
   return useQuery({
     queryKey: ["admin-all"],
     queryFn: async () => {
-      const [profiles, jobs, projects, analyses, threads, attempts, submissions, roles, flags, actions] = await Promise.all([
+      const [profiles, jobs, projects, analyses, threads, attempts, submissions, sessions, roles, flags, actions] = await Promise.all([
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         supabase.from("job_applications").select("*"),
         supabase.from("projects").select("*"),
@@ -33,16 +35,17 @@ function useAll() {
         supabase.from("mentor_threads").select("id,user_id,title,updated_at"),
         supabase.from("assessment_attempts").select("id,user_id,topic,level,score,total,created_at"),
         supabase.from("code_submissions").select("id,user_id,problem,language,created_at"),
+        supabase.from("interview_sessions").select("id,user_id,mode,target_role,experience,result,created_at"),
         supabase.from("user_roles").select("id,user_id,role"),
         supabase.from("feature_flags").select("*").order("key"),
         supabase.from("admin_actions").select("*").order("created_at", { ascending: false }).limit(50),
       ]);
       const err = profiles.error || jobs.error || projects.error || analyses.error || threads.error
-        || attempts.error || submissions.error || roles.error || flags.error || actions.error;
+        || attempts.error || submissions.error || sessions.error || roles.error || flags.error || actions.error;
       if (err) throw err;
       return {
         profiles: profiles.data, jobs: jobs.data, projects: projects.data, analyses: analyses.data,
-        threads: threads.data, attempts: attempts.data, submissions: submissions.data,
+        threads: threads.data, attempts: attempts.data, submissions: submissions.data, sessions: sessions.data,
         roles: roles.data, flags: flags.data, actions: actions.data,
       };
     },
@@ -54,6 +57,8 @@ function Admin() {
   const { data, isLoading, error } = useAll();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ full_name: "", education_level: "", target_role: "", skills: "" });
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-all"] });
 
   const users = useMemo(() => (data?.profiles ?? []).filter((p) =>
@@ -87,23 +92,45 @@ function Admin() {
     refresh();
   }
 
+  async function del(table: "job_applications" | "projects" | "resume_analyses" | "assessment_attempts" | "code_submissions" | "mentor_threads" | "interview_sessions", id: string, label: string) {
+    if (!window.confirm(`Delete this ${label}? This cannot be undone.`)) return;
+    const { error } = await supabase.from(table).delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    await logAction("delete_record", `${table}/${label}`, { id });
+    toast.success(`${label} deleted`);
+    refresh();
+  }
+
+  async function saveProfile() {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({
+      full_name: form.full_name || null, education_level: form.education_level || null,
+      target_role: form.target_role || null, skills: form.skills || null,
+    }).eq("id", user.id);
+    if (error) { toast.error(error.message); return; }
+    await logAction("edit_profile", user.email ?? user.id, { ...form });
+    toast.success("Profile updated");
+    setEditing(false);
+    refresh();
+  }
+
   const stats = [
     ["Users", data?.profiles.length], ["Job applications", data?.jobs.length], ["Projects", data?.projects.length],
     ["Resume analyses", data?.analyses.length], ["Mentor conversations", data?.threads.length],
-    ["Assessments", data?.attempts.length], ["Code submissions", data?.submissions.length],
+    ["Assessments", data?.attempts.length], ["Code submissions", data?.submissions.length], ["Interviews", data?.sessions.length],
   ] as const;
 
   const health = [
     ["Users & profiles", data?.profiles], ["Job applications", data?.jobs], ["Projects", data?.projects],
     ["Resume analyses", data?.analyses], ["Mentor threads", data?.threads], ["Assessment attempts", data?.attempts],
-    ["Code submissions", data?.submissions], ["Feature flags", data?.flags], ["Audit log", data?.actions],
+    ["Code submissions", data?.submissions], ["Interview sessions", data?.sessions], ["Feature flags", data?.flags], ["Audit log", data?.actions],
   ] as const;
 
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader icon={ShieldCheck} title="Admin Console" description="Manage users, roles, feature flags and platform health" />
       {error && <p className="text-destructive">{(error as Error).message}</p>}
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-8">
         {stats.map(([l, v]) => (
           <div key={l} className="surface p-4"><p className="font-display text-2xl font-bold text-primary">{v ?? "–"}</p><p className="text-xs text-muted-foreground">{l}</p></div>
         ))}
@@ -195,23 +222,40 @@ function Admin() {
           {user && data && (
             <div className="space-y-4 p-4 text-sm">
               <p className="text-muted-foreground">{user.email} · {user.education_level || "No education set"} · Skills: {user.skills || "—"}</p>
-              {isAdmin(user.id) ? (
-                <Button variant="outline" size="sm" onClick={() => setRole(user.id, user.email ?? user.id, false)}><ShieldX /> Remove admin</Button>
-              ) : (
-                <Button variant="hero" size="sm" onClick={() => setRole(user.id, user.email ?? user.id, true)}><ShieldPlus /> Make admin</Button>
-              )}
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={() => { setForm({ full_name: user.full_name ?? "", education_level: user.education_level ?? "", target_role: user.target_role ?? "", skills: user.skills ?? "" }); setEditing(true); }}><Pencil /> Edit profile</Button>
+                {isAdmin(user.id) ? (
+                  <Button variant="outline" size="sm" onClick={() => setRole(user.id, user.email ?? user.id, false)}><ShieldX /> Remove admin</Button>
+                ) : (
+                  <Button variant="hero" size="sm" onClick={() => setRole(user.id, user.email ?? user.id, true)}><ShieldPlus /> Make admin</Button>
+                )}
+              </div>
               <Tabs defaultValue="jobs">
-                <TabsList><TabsTrigger value="jobs">Jobs</TabsTrigger><TabsTrigger value="projects">Projects</TabsTrigger><TabsTrigger value="resumes">Resumes</TabsTrigger><TabsTrigger value="tests">Tests</TabsTrigger><TabsTrigger value="chats">Chats</TabsTrigger></TabsList>
-                <TabsContent value="jobs" className="space-y-2">{data.jobs.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex justify-between rounded-lg border p-2"><span>{j.company} — {j.role}</span><Badge variant="secondary">{j.status}</Badge></div>)}</TabsContent>
-                <TabsContent value="projects" className="space-y-2">{data.projects.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="rounded-lg border p-2"><p className="font-medium">{j.title}</p><p className="text-muted-foreground">{j.tech}</p></div>)}</TabsContent>
-                <TabsContent value="resumes" className="space-y-2">{data.analyses.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex justify-between rounded-lg border p-2"><span>{j.target_role || "General"}</span><span className="font-semibold">{(j.result as { overall_score?: number })?.overall_score ?? "–"}/100</span></div>)}</TabsContent>
-                <TabsContent value="tests" className="space-y-2">{data.attempts.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex justify-between rounded-lg border p-2"><span>{j.topic} ({j.level})</span><span className="font-semibold">{j.score}/{j.total}</span></div>)}</TabsContent>
-                <TabsContent value="chats" className="space-y-2">{data.threads.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="rounded-lg border p-2">{j.title}</div>)}</TabsContent>
+                <TabsList><TabsTrigger value="jobs">Jobs</TabsTrigger><TabsTrigger value="projects">Projects</TabsTrigger><TabsTrigger value="resumes">Resumes</TabsTrigger><TabsTrigger value="tests">Tests</TabsTrigger><TabsTrigger value="chats">Chats</TabsTrigger><TabsTrigger value="interviews">Interviews</TabsTrigger></TabsList>
+                <TabsContent value="jobs" className="space-y-2">{data.jobs.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex items-center justify-between gap-2 rounded-lg border p-2"><span>{j.company} — {j.role}</span><span className="flex items-center gap-2"><Badge variant="secondary">{j.status}</Badge><Button variant="ghost" size="icon" aria-label="Delete application" onClick={() => del("job_applications", j.id, "job application")}><Trash2 className="h-4 w-4 text-destructive" /></Button></span></div>)}</TabsContent>
+                <TabsContent value="projects" className="space-y-2">{data.projects.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex items-center justify-between gap-2 rounded-lg border p-2"><div><p className="font-medium">{j.title}</p><p className="text-muted-foreground">{j.tech}</p></div><Button variant="ghost" size="icon" aria-label="Delete project" onClick={() => del("projects", j.id, "project")}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>)}</TabsContent>
+                <TabsContent value="resumes" className="space-y-2">{data.analyses.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex items-center justify-between gap-2 rounded-lg border p-2"><span>{j.target_role || "General"}</span><span className="flex items-center gap-2"><span className="font-semibold">{(j.result as { overall_score?: number })?.overall_score ?? "–"}/100</span><Button variant="ghost" size="icon" aria-label="Delete analysis" onClick={() => del("resume_analyses", j.id, "resume analysis")}><Trash2 className="h-4 w-4 text-destructive" /></Button></span></div>)}</TabsContent>
+                <TabsContent value="tests" className="space-y-2">{data.attempts.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex items-center justify-between gap-2 rounded-lg border p-2"><span>{j.topic} ({j.level})</span><span className="flex items-center gap-2"><span className="font-semibold">{j.score}/{j.total}</span><Button variant="ghost" size="icon" aria-label="Delete attempt" onClick={() => del("assessment_attempts", j.id, "assessment attempt")}><Trash2 className="h-4 w-4 text-destructive" /></Button></span></div>)}</TabsContent>
+                <TabsContent value="chats" className="space-y-2">{data.threads.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex items-center justify-between gap-2 rounded-lg border p-2"><span>{j.title}</span><Button variant="ghost" size="icon" aria-label="Delete conversation" onClick={() => del("mentor_threads", j.id, "conversation")}><Trash2 className="h-4 w-4 text-destructive" /></Button></div>)}</TabsContent>
+                <TabsContent value="interviews" className="space-y-2">{data.sessions.filter((j) => j.user_id === sel).map((j) => <div key={j.id} className="flex items-center justify-between gap-2 rounded-lg border p-2"><span>{j.target_role} <Badge variant="secondary">{j.mode}</Badge></span><span className="flex items-center gap-2"><span className="font-semibold">{Math.round((j.result as { overall_percentage?: number } | null)?.overall_percentage ?? 0)}%</span><Button variant="ghost" size="icon" aria-label="Delete interview" onClick={() => del("interview_sessions", j.id, "interview session")}><Trash2 className="h-4 w-4 text-destructive" /></Button></span></div>)}</TabsContent>
               </Tabs>
             </div>
           )}
         </SheetContent>
       </Sheet>
+
+      <Dialog open={editing} onOpenChange={setEditing}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit profile — {user?.email}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1"><Label>Full name</Label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
+            <div className="space-y-1"><Label>Education level</Label><Input value={form.education_level} onChange={(e) => setForm({ ...form, education_level: e.target.value })} /></div>
+            <div className="space-y-1"><Label>Target role</Label><Input value={form.target_role} onChange={(e) => setForm({ ...form, target_role: e.target.value })} /></div>
+            <div className="space-y-1"><Label>Skills</Label><Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} /></div>
+            <Button variant="hero" className="w-full" onClick={saveProfile}>Save changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
