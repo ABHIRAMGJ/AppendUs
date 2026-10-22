@@ -268,9 +268,7 @@ async def quiz(request: Request) -> JSONResponse:
 
 @app.post("/resume")
 async def resume(request: Request) -> JSONResponse:
-    user_id = require_user_id(await user_id_from(request))
-    body = await request.json()
-    text_resume = text(body.get("resume"), config.MAX_RESUME_CHARS)
+    user_id, token = await session_from(request)
     role = text(body.get("role"), 200).strip()
     jd = text(body.get("jd"), 10000)
 
