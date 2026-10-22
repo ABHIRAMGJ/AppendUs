@@ -6,7 +6,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/Logo";
 import { ThemeToggle } from "@/lib/theme";
-import hero from "@/assets/hero-student.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
