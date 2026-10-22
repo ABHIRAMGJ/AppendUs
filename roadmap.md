@@ -1,16 +1,10 @@
 # Roadmap
-- [x] Sign up / login works; resend-verification button and "verify first" message added
-- [x] Checked all 4 core modules end to end; fixed Mock Interview not starting
-- [ ] Own email domain for verification emails (waiting on user to finish domain setup)
-- [x] Admin role granted to gjabhiram001@gmail.com; admin area verified showing user data
-- [ ] Welcome email (after domain is set up)
-- [x] Skill Assessments (scored quizzes + history), Coding Practice (test cases, timer, saved submissions), Projects (public/private + portfolio page), Job Tracker (deadlines, next actions)
-- [x] Admin tools: feature flags, audit log, health checks, grant/revoke admin
-- [x] Voice mock interview (real + proctored coding), stored + analysed
-- [ ] Remaining Master Prompt V2 modules: work simulator, skill DNA, knowledge graph, salary comparison, scam checker, etc.
-- [x] Admin full CRUD: edit profiles, delete any user record, interview sessions in console, all actions audited
-- [x] Full Real Interview verified end to end (voice capture, strict scoring, report, history)
-- [x] Python + FastAPI AI service: all AI moved out of the app; scores recomputed in code, keywords verified against the resume, strict schema validation; 40 pytest tests, GitHub Actions CI, Dockerfile, docker-compose
-- [ ] Host the Python AI service publicly and set AI_SERVICE_URL there (it runs locally in the sandbox for now)
-- [x] Brighter mouse-connecting lines in background
-- [ ] Render live: blueprint ready (render.yaml); blocked on a database connection string reachable from Render, then set AI_SERVICE_URL
+
+## Done
+- Rename product to AppendUs everywhere (logo, titles, emails, AI personas).
+- AI service data layer rewritten to Supabase REST + caller token (no DB password needed); render.yaml only needs LOVABLE_API_KEY, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY.
+- RPC match_resume_chunks verified; 44 AI-service tests pass; live resume RAG + mentor verified with the owner's session.
+
+## Blocked on the user
+- Render deploy: needs a free Render account connected to the GitHub repo, then Blueprint deploy with LOVABLE_API_KEY; send the resulting URL back so AI_SERVICE_URL can be set.
+- Publish the app after AI_SERVICE_URL is set.

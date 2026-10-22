@@ -16,10 +16,9 @@ EMBED_MODEL = _get("AI_EMBED_MODEL", "google/gemini-embedding-2")
 EMBED_DIMS = 3072
 REASONING_EFFORT = _get("AI_REASONING_EFFORT", "low")
 
-# Backend used for session verification and the application database.
+# Backend used for session verification, RLS-scoped data access and the AI gateway.
 SUPABASE_URL = _get("SUPABASE_URL")
 SUPABASE_KEY = _get("SUPABASE_PUBLISHABLE_KEY")
-DB_URL = _get("SUPABASE_DB_URL")
 
 EMBED_BATCH = 16
 MAX_RESUME_CHARS = 30000

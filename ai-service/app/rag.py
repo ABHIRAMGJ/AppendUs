@@ -54,7 +54,7 @@ def format_evidence(matches: list[dict[str, Any]], fallback: str) -> str:
     return "\n\n---\n\n".join(blocks)
 
 
-async def index_resume(user_id: str, resume: str, role: str, jd: str, limit: int = 10) -> str:
+async def index_resume(token: str, user_id: str, resume: str, role: str, jd: str, limit: int = 10) -> str:
     """Store this resume as vectors and return the excerpts most relevant to the target role."""
     chunks = chunk_resume(resume)
     if not chunks:
@@ -63,28 +63,27 @@ async def index_resume(user_id: str, resume: str, role: str, jd: str, limit: int
     vectors = await gateway.embed(chunks + [query_for(role, jd)])
     chunk_vectors, query_vector = vectors[: len(chunks)], vectors[-1]
 
-    await db.execute("delete from public.resume_chunks where user_id = %s", (user_id,))
-    await db.execute_many(
-        """
-        insert into public.resume_chunks (user_id, content, embedding, metadata)
-        values (%s, %s, %s::vector, %s::jsonb)
-        """,
-        [
-            (user_id, chunk, json.dumps(vector), json.dumps({"index": i, "role": role or None}))
-            for i, (chunk, vector) in enumerate(zip(chunks, chunk_vectors))
-        ],
-    )
+    await db.delete(token, "resume_chunks", {"user_id": user_id})
+    rows = [
+        {
+            "user_id": user_id,
+            "content": chunk,
+            "embedding": json.dumps(vector),
+            "metadata": {"index": index, "role": role or None},
+        }
+        for index, (chunk, vector) in enumerate(zip(chunks, chunk_vectors))
+    ]
+    for start in range(0, len(rows), 10):  # keep request bodies modest
+        await db.insert(token, "resume_chunks", rows[start : start + 10])
 
-    needle = json.dumps(query_vector)
-    matches = await db.fetch(
-        """
-        select content,
-               1 - (embedding::halfvec(3072) <=> %s::halfvec(3072)) as similarity
-          from public.resume_chunks
-         where user_id = %s
-         order by embedding::halfvec(3072) <=> %s::halfvec(3072)
-         limit %s
-        """,
-        (needle, user_id, needle, max(1, min(limit, len(chunks)))),
-    )
+    try:
+        matches = await db.rpc(
+            token,
+            "match_resume_chunks",
+            {"query_embedding": json.dumps(query_vector), "match_count": max(1, min(limit, len(chunks)))},
+        )
+    except db.StoreError:
+        matches = []  # search hiccup: fall back to the full resume text below
+    if not isinstance(matches, list):
+        matches = []
     return format_evidence(matches, resume)
