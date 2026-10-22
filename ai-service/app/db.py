@@ -60,8 +60,9 @@ async def execute(sql: str, params: Sequence[Any] = ()) -> int:
 
 async def execute_many(sql: str, rows: Sequence[Sequence[Any]]) -> int:
     async with _ready().connection() as conn:
-        cur = await conn.executemany(sql, rows)
-        return cur.rowcount if cur.rowcount is not None else 0
+        async with conn.cursor() as cur:
+            await cur.executemany(sql, list(rows))
+    return len(rows)
 
 
 def as_json(value: Any) -> str:
