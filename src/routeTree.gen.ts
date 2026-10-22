@@ -10,33 +10,318 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAssessmentsRouteImport } from './routes/_authenticated/assessments'
+import { Route as AuthenticatedCareerPathsRouteImport } from './routes/_authenticated/career-paths'
+import { Route as AuthenticatedCodingRouteImport } from './routes/_authenticated/coding'
+import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
+import { Route as AuthenticatedCompaniesRouteImport } from './routes/_authenticated/companies'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedInterviewsRouteImport } from './routes/_authenticated/interviews'
+import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
+import { Route as AuthenticatedLearningPlanRouteImport } from './routes/_authenticated/learning-plan'
+import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated/mentor'
+import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
+import { Route as AuthenticatedResumeRouteImport } from './routes/_authenticated/resume'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiGenerateRouteImport } from './routes/api/generate'
+import { Route as ApiMentorRouteImport } from './routes/api/mentor'
+import { Route as ApiResumeRouteImport } from './routes/api/resume'
+import { Route as AuthenticatedMentorIndexRouteImport } from './routes/_authenticated/mentor.index'
+import { Route as AuthenticatedMentorThreadIdRouteImport } from './routes/_authenticated/mentor.$threadId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAssessmentsRoute =
+  AuthenticatedAssessmentsRouteImport.update({
+    id: '/assessments',
+    path: '/assessments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCareerPathsRoute =
+  AuthenticatedCareerPathsRouteImport.update({
+    id: '/career-paths',
+    path: '/career-paths',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCodingRoute = AuthenticatedCodingRouteImport.update({
+  id: '/coding',
+  path: '/coding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCompaniesRoute = AuthenticatedCompaniesRouteImport.update({
+  id: '/companies',
+  path: '/companies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedInterviewsRoute = AuthenticatedInterviewsRouteImport.update({
+  id: '/interviews',
+  path: '/interviews',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLearningPlanRoute =
+  AuthenticatedLearningPlanRouteImport.update({
+    id: '/learning-plan',
+    path: '/learning-plan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMentorRoute = AuthenticatedMentorRouteImport.update({
+  id: '/mentor',
+  path: '/mentor',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedResumeRoute = AuthenticatedResumeRouteImport.update({
+  id: '/resume',
+  path: '/resume',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateRoute = ApiGenerateRouteImport.update({
+  id: '/api/generate',
+  path: '/api/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMentorRoute = ApiMentorRouteImport.update({
+  id: '/api/mentor',
+  path: '/api/mentor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiResumeRoute = ApiResumeRouteImport.update({
+  id: '/api/resume',
+  path: '/api/resume',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedMentorIndexRoute =
+  AuthenticatedMentorIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedMentorRoute,
+  } as any)
+const AuthenticatedMentorThreadIdRoute =
+  AuthenticatedMentorThreadIdRouteImport.update({
+    id: '/$threadId',
+    path: '/$threadId',
+    getParentRoute: () => AuthenticatedMentorRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/assessments': typeof AuthenticatedAssessmentsRoute
+  '/career-paths': typeof AuthenticatedCareerPathsRoute
+  '/coding': typeof AuthenticatedCodingRoute
+  '/community': typeof AuthenticatedCommunityRoute
+  '/companies': typeof AuthenticatedCompaniesRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/interviews': typeof AuthenticatedInterviewsRoute
+  '/jobs': typeof AuthenticatedJobsRoute
+  '/learning-plan': typeof AuthenticatedLearningPlanRoute
+  '/mentor': typeof AuthenticatedMentorRouteWithChildren
+  '/projects': typeof AuthenticatedProjectsRoute
+  '/resume': typeof AuthenticatedResumeRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/mentor': typeof ApiMentorRoute
+  '/api/resume': typeof ApiResumeRoute
+  '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
+  '/mentor/': typeof AuthenticatedMentorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/assessments': typeof AuthenticatedAssessmentsRoute
+  '/career-paths': typeof AuthenticatedCareerPathsRoute
+  '/coding': typeof AuthenticatedCodingRoute
+  '/community': typeof AuthenticatedCommunityRoute
+  '/companies': typeof AuthenticatedCompaniesRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/interviews': typeof AuthenticatedInterviewsRoute
+  '/jobs': typeof AuthenticatedJobsRoute
+  '/learning-plan': typeof AuthenticatedLearningPlanRoute
+  '/projects': typeof AuthenticatedProjectsRoute
+  '/resume': typeof AuthenticatedResumeRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/mentor': typeof ApiMentorRoute
+  '/api/resume': typeof ApiResumeRoute
+  '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
+  '/mentor': typeof AuthenticatedMentorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/assessments': typeof AuthenticatedAssessmentsRoute
+  '/_authenticated/career-paths': typeof AuthenticatedCareerPathsRoute
+  '/_authenticated/coding': typeof AuthenticatedCodingRoute
+  '/_authenticated/community': typeof AuthenticatedCommunityRoute
+  '/_authenticated/companies': typeof AuthenticatedCompaniesRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/interviews': typeof AuthenticatedInterviewsRoute
+  '/_authenticated/jobs': typeof AuthenticatedJobsRoute
+  '/_authenticated/learning-plan': typeof AuthenticatedLearningPlanRoute
+  '/_authenticated/mentor': typeof AuthenticatedMentorRouteWithChildren
+  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
+  '/_authenticated/resume': typeof AuthenticatedResumeRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/mentor': typeof ApiMentorRoute
+  '/api/resume': typeof ApiResumeRoute
+  '/_authenticated/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
+  '/_authenticated/mentor/': typeof AuthenticatedMentorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/admin'
+    | '/assessments'
+    | '/career-paths'
+    | '/coding'
+    | '/community'
+    | '/companies'
+    | '/dashboard'
+    | '/interviews'
+    | '/jobs'
+    | '/learning-plan'
+    | '/mentor'
+    | '/projects'
+    | '/resume'
+    | '/settings'
+    | '/api/chat'
+    | '/api/generate'
+    | '/api/mentor'
+    | '/api/resume'
+    | '/mentor/$threadId'
+    | '/mentor/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/admin'
+    | '/assessments'
+    | '/career-paths'
+    | '/coding'
+    | '/community'
+    | '/companies'
+    | '/dashboard'
+    | '/interviews'
+    | '/jobs'
+    | '/learning-plan'
+    | '/projects'
+    | '/resume'
+    | '/settings'
+    | '/api/chat'
+    | '/api/generate'
+    | '/api/mentor'
+    | '/api/resume'
+    | '/mentor/$threadId'
+    | '/mentor'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/admin'
+    | '/_authenticated/assessments'
+    | '/_authenticated/career-paths'
+    | '/_authenticated/coding'
+    | '/_authenticated/community'
+    | '/_authenticated/companies'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/interviews'
+    | '/_authenticated/jobs'
+    | '/_authenticated/learning-plan'
+    | '/_authenticated/mentor'
+    | '/_authenticated/projects'
+    | '/_authenticated/resume'
+    | '/_authenticated/settings'
+    | '/api/chat'
+    | '/api/generate'
+    | '/api/mentor'
+    | '/api/resume'
+    | '/_authenticated/mentor/$threadId'
+    | '/_authenticated/mentor/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiChatRoute: typeof ApiChatRoute
+  ApiGenerateRoute: typeof ApiGenerateRoute
+  ApiMentorRoute: typeof ApiMentorRoute
+  ApiResumeRoute: typeof ApiResumeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +333,229 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/assessments': {
+      id: '/_authenticated/assessments'
+      path: '/assessments'
+      fullPath: '/assessments'
+      preLoaderRoute: typeof AuthenticatedAssessmentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/career-paths': {
+      id: '/_authenticated/career-paths'
+      path: '/career-paths'
+      fullPath: '/career-paths'
+      preLoaderRoute: typeof AuthenticatedCareerPathsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/coding': {
+      id: '/_authenticated/coding'
+      path: '/coding'
+      fullPath: '/coding'
+      preLoaderRoute: typeof AuthenticatedCodingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/community': {
+      id: '/_authenticated/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof AuthenticatedCommunityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/companies': {
+      id: '/_authenticated/companies'
+      path: '/companies'
+      fullPath: '/companies'
+      preLoaderRoute: typeof AuthenticatedCompaniesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/interviews': {
+      id: '/_authenticated/interviews'
+      path: '/interviews'
+      fullPath: '/interviews'
+      preLoaderRoute: typeof AuthenticatedInterviewsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/jobs': {
+      id: '/_authenticated/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof AuthenticatedJobsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/learning-plan': {
+      id: '/_authenticated/learning-plan'
+      path: '/learning-plan'
+      fullPath: '/learning-plan'
+      preLoaderRoute: typeof AuthenticatedLearningPlanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mentor': {
+      id: '/_authenticated/mentor'
+      path: '/mentor'
+      fullPath: '/mentor'
+      preLoaderRoute: typeof AuthenticatedMentorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projects': {
+      id: '/_authenticated/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/resume': {
+      id: '/_authenticated/resume'
+      path: '/resume'
+      fullPath: '/resume'
+      preLoaderRoute: typeof AuthenticatedResumeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate': {
+      id: '/api/generate'
+      path: '/api/generate'
+      fullPath: '/api/generate'
+      preLoaderRoute: typeof ApiGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mentor': {
+      id: '/api/mentor'
+      path: '/api/mentor'
+      fullPath: '/api/mentor'
+      preLoaderRoute: typeof ApiMentorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/resume': {
+      id: '/api/resume'
+      path: '/api/resume'
+      fullPath: '/api/resume'
+      preLoaderRoute: typeof ApiResumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/mentor/': {
+      id: '/_authenticated/mentor/'
+      path: '/'
+      fullPath: '/mentor/'
+      preLoaderRoute: typeof AuthenticatedMentorIndexRouteImport
+      parentRoute: typeof AuthenticatedMentorRoute
+    }
+    '/_authenticated/mentor/$threadId': {
+      id: '/_authenticated/mentor/$threadId'
+      path: '/$threadId'
+      fullPath: '/mentor/$threadId'
+      preLoaderRoute: typeof AuthenticatedMentorThreadIdRouteImport
+      parentRoute: typeof AuthenticatedMentorRoute
+    }
   }
 }
 
+interface AuthenticatedMentorRouteChildren {
+  AuthenticatedMentorThreadIdRoute: typeof AuthenticatedMentorThreadIdRoute
+  AuthenticatedMentorIndexRoute: typeof AuthenticatedMentorIndexRoute
+}
+
+const AuthenticatedMentorRouteChildren: AuthenticatedMentorRouteChildren = {
+  AuthenticatedMentorThreadIdRoute: AuthenticatedMentorThreadIdRoute,
+  AuthenticatedMentorIndexRoute: AuthenticatedMentorIndexRoute,
+}
+
+const AuthenticatedMentorRouteWithChildren =
+  AuthenticatedMentorRoute._addFileChildren(AuthenticatedMentorRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAssessmentsRoute: typeof AuthenticatedAssessmentsRoute
+  AuthenticatedCareerPathsRoute: typeof AuthenticatedCareerPathsRoute
+  AuthenticatedCodingRoute: typeof AuthenticatedCodingRoute
+  AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
+  AuthenticatedCompaniesRoute: typeof AuthenticatedCompaniesRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedInterviewsRoute: typeof AuthenticatedInterviewsRoute
+  AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
+  AuthenticatedLearningPlanRoute: typeof AuthenticatedLearningPlanRoute
+  AuthenticatedMentorRoute: typeof AuthenticatedMentorRouteWithChildren
+  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
+  AuthenticatedResumeRoute: typeof AuthenticatedResumeRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAssessmentsRoute: AuthenticatedAssessmentsRoute,
+  AuthenticatedCareerPathsRoute: AuthenticatedCareerPathsRoute,
+  AuthenticatedCodingRoute: AuthenticatedCodingRoute,
+  AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
+  AuthenticatedCompaniesRoute: AuthenticatedCompaniesRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedInterviewsRoute: AuthenticatedInterviewsRoute,
+  AuthenticatedJobsRoute: AuthenticatedJobsRoute,
+  AuthenticatedLearningPlanRoute: AuthenticatedLearningPlanRoute,
+  AuthenticatedMentorRoute: AuthenticatedMentorRouteWithChildren,
+  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
+  AuthenticatedResumeRoute: AuthenticatedResumeRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ApiChatRoute: ApiChatRoute,
+  ApiGenerateRoute: ApiGenerateRoute,
+  ApiMentorRoute: ApiMentorRoute,
+  ApiResumeRoute: ApiResumeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
