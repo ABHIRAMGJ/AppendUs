@@ -14,12 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_actions: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          detail: Json
+          id: string
+          target: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          target?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          detail?: Json
+          id?: string
+          target?: string | null
+        }
+        Relationships: []
+      }
+      assessment_attempts: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          level: string
+          questions: Json
+          score: number
+          topic: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          id?: string
+          level: string
+          questions: Json
+          score: number
+          topic: string
+          total: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          level?: string
+          questions?: Json
+          score?: number
+          topic?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      code_submissions: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          language: string
+          problem: string
+          review: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          language: string
+          problem: string
+          review?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          language?: string
+          problem?: string
+          review?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          description: string | null
+          enabled: boolean
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          description?: string | null
+          enabled?: boolean
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          description?: string | null
+          enabled?: boolean
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           applied_on: string | null
           company: string
           created_at: string
+          deadline: string | null
           id: string
+          next_action: string | null
           notes: string | null
           role: string
           status: string
@@ -29,7 +145,9 @@ export type Database = {
           applied_on?: string | null
           company: string
           created_at?: string
+          deadline?: string | null
           id?: string
+          next_action?: string | null
           notes?: string | null
           role: string
           status?: string
@@ -39,7 +157,9 @@ export type Database = {
           applied_on?: string | null
           company?: string
           created_at?: string
+          deadline?: string | null
           id?: string
+          next_action?: string | null
           notes?: string | null
           role?: string
           status?: string
@@ -149,6 +269,7 @@ export type Database = {
           tech: string | null
           title: string
           user_id: string
+          visibility: string
         }
         Insert: {
           created_at?: string
@@ -159,6 +280,7 @@ export type Database = {
           tech?: string | null
           title: string
           user_id: string
+          visibility?: string
         }
         Update: {
           created_at?: string
@@ -169,6 +291,7 @@ export type Database = {
           tech?: string | null
           title?: string
           user_id?: string
+          visibility?: string
         }
         Relationships: []
       }
