@@ -156,7 +156,7 @@ async def health() -> JSONResponse:
     database = "rest" if config.SUPABASE_URL and config.SUPABASE_KEY else "not configured"
     return JSONResponse(
         {
-            "status": "ok" if database in ("ok", "not configured") else "degraded",
+            "status": "ok" if database in ("ok", "rest", "not configured") else "degraded",
             "runtime": "python-fastapi",
             "model": config.CHAT_MODEL,
             "embedding_model": config.EMBED_MODEL,
