@@ -42,6 +42,9 @@ function CareerPaths() {
   const [cat, setCat] = useState("All");
   const [sel, setSel] = useState<Role | null>(null);
   const gen = useGenerate("career");
+  const paths = useGenerate("pathways");
+  const [stage, setStage] = useState("");
+  const [interest, setInterest] = useState("");
 
   const list = useMemo(
     () => ROLES.filter((r) => (cat === "All" || r.cat === cat) && r.title.toLowerCase().includes(q.toLowerCase())),
@@ -56,6 +59,20 @@ function CareerPaths() {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader icon={Compass} title="Career Path Finder" description="Discover the best career paths based on your interests, skills and goals" />
+      <div className="surface mb-6 p-5">
+        <p className="font-semibold">Where are you starting from?</p>
+        <p className="text-sm text-muted-foreground">Get multiple realistic pathways with prerequisites, timelines and your next step.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {["After 10th", "After Intermediate / 12th", "After Diploma", "After B.Tech / Degree", "After MBA / M.Tech", "Working professional", "Career switcher"].map((s) => (
+            <button key={s} onClick={() => setStage(s)} className={cn("rounded-full border px-3 py-1.5 text-sm", stage === s ? "border-primary bg-accent font-semibold" : "hover:bg-muted")}>{s}</button>
+          ))}
+        </div>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <Input value={interest} onChange={(e) => setInterest(e.target.value)} placeholder="Your interests (optional), e.g. computers, biology, design" />
+          <Button variant="hero" disabled={!stage || paths.loading} onClick={() => paths.run({ stage, interest })}>Show my pathways</Button>
+        </div>
+        {(paths.text || paths.loading) && <div className="mt-4 rounded-xl border"><AiOutput text={paths.text} loading={paths.loading} empty="" /></div>}
+      </div>
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search careers..." className="h-11 pl-9" />
