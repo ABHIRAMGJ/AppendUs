@@ -30,6 +30,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 import { Route as ApiMentorRouteImport } from './routes/api/mentor'
+import { Route as ApiQuizRouteImport } from './routes/api/quiz'
 import { Route as ApiResumeRouteImport } from './routes/api/resume'
 import { Route as AuthenticatedMentorIndexRouteImport } from './routes/_authenticated/mentor.index'
 import { Route as AuthenticatedMentorThreadIdRouteImport } from './routes/_authenticated/mentor.$threadId'
@@ -141,6 +142,11 @@ const ApiMentorRoute = ApiMentorRouteImport.update({
   path: '/api/mentor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiQuizRoute = ApiQuizRouteImport.update({
+  id: '/api/quiz',
+  path: '/api/quiz',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiResumeRoute = ApiResumeRouteImport.update({
   id: '/api/resume',
   path: '/api/resume',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/mentor': typeof ApiMentorRoute
+  '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
   '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/mentor/': typeof AuthenticatedMentorIndexRoute
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/mentor': typeof ApiMentorRoute
+  '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
   '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/mentor': typeof AuthenticatedMentorIndexRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/mentor': typeof ApiMentorRoute
+  '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
   '/_authenticated/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/_authenticated/mentor/': typeof AuthenticatedMentorIndexRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/generate'
     | '/api/mentor'
+    | '/api/quiz'
     | '/api/resume'
     | '/mentor/$threadId'
     | '/mentor/'
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/generate'
     | '/api/mentor'
+    | '/api/quiz'
     | '/api/resume'
     | '/mentor/$threadId'
     | '/mentor'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/generate'
     | '/api/mentor'
+    | '/api/quiz'
     | '/api/resume'
     | '/_authenticated/mentor/$threadId'
     | '/_authenticated/mentor/'
@@ -321,6 +333,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiGenerateRoute: typeof ApiGenerateRoute
   ApiMentorRoute: typeof ApiMentorRoute
+  ApiQuizRoute: typeof ApiQuizRoute
   ApiResumeRoute: typeof ApiResumeRoute
 }
 
@@ -473,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMentorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/quiz': {
+      id: '/api/quiz'
+      path: '/api/quiz'
+      fullPath: '/api/quiz'
+      preLoaderRoute: typeof ApiQuizRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/resume': {
       id: '/api/resume'
       path: '/api/resume'
@@ -555,6 +575,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiGenerateRoute: ApiGenerateRoute,
   ApiMentorRoute: ApiMentorRoute,
+  ApiQuizRoute: ApiQuizRoute,
   ApiResumeRoute: ApiResumeRoute,
 }
 export const routeTree = rootRouteImport
