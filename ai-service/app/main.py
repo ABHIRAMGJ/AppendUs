@@ -269,13 +269,15 @@ async def quiz(request: Request) -> JSONResponse:
 @app.post("/resume")
 async def resume(request: Request) -> JSONResponse:
     user_id, token = await session_from(request)
+    body = await request.json()
+    text_resume = text(body.get("resume"), config.MAX_RESUME_CHARS)
     role = text(body.get("role"), 200).strip()
     jd = text(body.get("jd"), 10000)
 
     if len(text_resume.strip()) < 100:
         raise gateway.GatewayError("Please upload your resume first.", 400)
 
-    evidence = await rag.index_resume(user_id, text_resume, role, jd)
+    evidence = await rag.index_resume(token, user_id, text_resume, role, jd)
     brief = (
         f"Target role: {role or 'not specified (infer best fit)'}\n"
         f"Job description: {jd or 'not provided'}\n\n"
@@ -288,10 +290,13 @@ async def resume(request: Request) -> JSONResponse:
         prompt=brief,
         name="resume_analysis",
     )
-    row = await db.fetch_one(
-        "insert into public.resume_analyses (user_id, target_role, result) values (%s, %s, %s::jsonb) returning id",
-        (user_id, role or None, json.dumps(result, default=str)),
+    rows = await db.insert(
+        token,
+        "resume_analyses",
+        [{"user_id": user_id, "target_role": role or None, "result": result}],
+        returning=True,
     )
+    row = rows[0] if rows else None
     return JSONResponse({"id": str(row["id"]) if row else None, "result": result})
 
 
@@ -300,7 +305,7 @@ async def resume(request: Request) -> JSONResponse:
 
 @app.post("/interview")
 async def interview(request: Request) -> JSONResponse:
-    user_id = require_user_id(await user_id_from(request))
+    user_id, token = await session_from(request)
     body = await request.json()
     action = text(body.get("action"), 20)
     mode = "coding" if body.get("mode") == "coding" else "real"
