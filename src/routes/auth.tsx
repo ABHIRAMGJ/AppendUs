@@ -43,23 +43,39 @@ function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", password: "", code: "", confirm: "" });
+  const sendCode = useServerFn(sendSignupCode);
+  const createAccount = useServerFn(verifyCodeAndCreateAccount);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  async function resendCode() {
+    if (!codeSentTo) return;
+    try {
+      await sendCode({ data: { email: codeSentTo } });
+      toast.success("A new code is on its way.");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email: form.email,
-          password: form.password,
-          options: { emailRedirectTo: window.location.origin + "/dashboard", data: { full_name: form.name } },
-        });
+      if (mode === "signup" && !codeSentTo) {
+        await sendCode({ data: { email: form.email } });
+        setCodeSentTo(form.email);
+        toast.success("We emailed you a 6-digit code.");
+      } else if (mode === "signup" && codeSentTo) {
+        if (form.password !== form.confirm) throw new Error("Passwords don't match.");
+        await createAccount({ data: { email: codeSentTo, code: form.code, password: form.password, name: form.name } });
+        const { error } = await supabase.auth.signInWithPassword({ email: codeSentTo, password: form.password });
         if (error) throw error;
-        setSent(form.email);
+        toast.success("Email verified — welcome!");
+        navigate({ to: "/dashboard" });
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
           redirectTo: window.location.origin + "/reset-password",
