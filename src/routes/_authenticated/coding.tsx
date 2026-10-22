@@ -34,9 +34,9 @@ const STARTER: Record<string, string> = {
 function Coding() {
   const [idx, setIdx] = useState(0);
   const [lang, setLang] = useState("Python");
-  const [code, setCode] = useState(STARTER.Python);
+  const [code, setCode] = useState(STARTER["Python"]!);
   const gen = useGenerate("code");
-  const prob = PROBLEMS[idx];
+  const prob = PROBLEMS[idx] ?? PROBLEMS[0]!;
   const color = (d: string) => (d === "Easy" ? "bg-success/15 text-success" : d === "Medium" ? "bg-warning/20 text-warning-foreground dark:text-warning" : "bg-destructive/15 text-destructive");
 
   return (
@@ -54,7 +54,7 @@ function Coding() {
           <div className="surface p-5"><h2 className="text-lg font-semibold">{prob.t}</h2><p className="mt-1 text-sm text-muted-foreground">{prob.p}</p></div>
           <div className="surface overflow-hidden">
             <div className="flex items-center justify-between border-b px-3 py-2">
-              <Select value={lang} onValueChange={(v) => { setLang(v); setCode(STARTER[v]); }}>
+              <Select value={lang} onValueChange={(v) => { setLang(v); setCode(STARTER[v] ?? ""); }}>
                 <SelectTrigger className="h-8 w-36"><SelectValue /></SelectTrigger>
                 <SelectContent>{Object.keys(STARTER).map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
               </Select>

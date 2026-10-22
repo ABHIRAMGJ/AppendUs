@@ -87,7 +87,7 @@ function Jobs() {
         {isLoading && <p className="p-6 text-sm text-muted-foreground">Loading...</p>}
         {!isLoading && jobs.length === 0 && <p className="p-6 text-sm text-muted-foreground">No applications yet. Click Add to track your first one.</p>}
         {jobs.map((j) => {
-          const st = STATUSES.find((s) => s.v === j.status) ?? STATUSES[0];
+          const st = STATUSES.find((s) => s.v === j.status) ?? STATUSES[0]!;
           return (
             <div key={j.id} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 p-4">
               <div className="grid h-11 w-11 place-items-center rounded-lg bg-accent font-display font-bold text-accent-foreground">{j.company[0]?.toUpperCase()}</div>

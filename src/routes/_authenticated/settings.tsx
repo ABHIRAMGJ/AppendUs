@@ -48,7 +48,7 @@ function Settings() {
       skills: f.skills || null, weekly_hours: f.weekly_hours ? Number(f.weekly_hours) : null, updated_at: new Date().toISOString(),
     });
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["profile"] });
     toast.success("Profile saved");
   }
@@ -57,7 +57,7 @@ function Settings() {
     const tables = ["mentor_threads", "job_applications", "projects", "resume_analyses"] as const;
     for (const t of tables) {
       const { error } = await supabase.from(t).delete().not("id", "is", null);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
     }
     localStorage.removeItem("careeros-last-plan");
     localStorage.removeItem("careeros-assistant-v1");

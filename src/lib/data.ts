@@ -30,13 +30,13 @@ export async function streamGenerate(
   task: string,
   input: Record<string, string>,
   onText: (t: string) => void,
-  signal?: AbortSignal,
+  signal?: AbortSignal | null,
 ) {
   const res = await fetch("/api/generate", {
     method: "POST",
     headers: { "content-type": "application/json", ...(await authHeaders()) },
     body: JSON.stringify({ task, input }),
-    signal,
+    signal: signal ?? null,
   });
   if (!res.ok || !res.body) {
     let msg = "Something went wrong";

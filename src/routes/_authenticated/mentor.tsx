@@ -29,7 +29,7 @@ function MentorLayout() {
   }
   async function remove(id: string) {
     const { error } = await supabase.from("mentor_threads").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     await qc.invalidateQueries({ queryKey: ["mentor-threads"] });
     if (params.threadId === id) navigate({ to: "/mentor" });
   }

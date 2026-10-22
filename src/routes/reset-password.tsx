@@ -28,11 +28,11 @@ function Reset() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (pw !== pw2) return toast.error("Passwords don't match");
+    if (pw !== pw2) { toast.error("Passwords don't match"); return; } // ("Passwords don't match");
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password: pw });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Password updated");
     navigate({ to: "/dashboard" });
   }

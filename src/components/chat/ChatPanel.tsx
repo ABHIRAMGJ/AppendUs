@@ -24,7 +24,7 @@ export type ChatPanelProps = {
   id: string;
   api: string;
   body?: Record<string, unknown>;
-  initialMessages?: UIMessage[];
+  initialMessages?: UIMessage[] | undefined;
   suggestions?: string[];
   emptyTitle: string;
   emptyDescription: string;
@@ -54,7 +54,7 @@ export function ChatPanel(props: ChatPanelProps) {
 
   const { messages, sendMessage, status, stop } = useChat({
     id: props.id,
-    messages: props.initialMessages,
+    ...(props.initialMessages ? { messages: props.initialMessages } : {}),
     transport,
     onError: (e) => {
       let msg = e.message;

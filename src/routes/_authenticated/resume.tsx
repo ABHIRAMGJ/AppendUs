@@ -61,10 +61,10 @@ function Resume() {
 
   async function onFile(f?: File) {
     if (!f) return;
-    if (f.size > 5 * 1024 * 1024) return toast.error("File is larger than 5MB");
+    if (f.size > 5 * 1024 * 1024) { toast.error("File is larger than 5MB"); return; }
     try {
       const t = f.type === "application/pdf" || f.name.endsWith(".pdf") ? await extractPdf(f) : await f.text();
-      if (t.trim().length < 50) return toast.error("Couldn't read text from this file. Try pasting your resume text instead.");
+      if (t.trim().length < 50) { toast.error("Couldn't read text from this file. Try pasting your resume text instead."); return; }
       setText(t);
       setFileName(f.name);
     } catch {
