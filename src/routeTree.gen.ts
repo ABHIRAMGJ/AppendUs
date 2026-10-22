@@ -32,6 +32,7 @@ import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 import { Route as ApiMentorRouteImport } from './routes/api/mentor'
 import { Route as ApiQuizRouteImport } from './routes/api/quiz'
 import { Route as ApiResumeRouteImport } from './routes/api/resume'
+import { Route as PortfolioUserIdRouteImport } from './routes/portfolio.$userId'
 import { Route as AuthenticatedMentorIndexRouteImport } from './routes/_authenticated/mentor.index'
 import { Route as AuthenticatedMentorThreadIdRouteImport } from './routes/_authenticated/mentor.$threadId'
 
@@ -152,6 +153,11 @@ const ApiResumeRoute = ApiResumeRouteImport.update({
   path: '/api/resume',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortfolioUserIdRoute = PortfolioUserIdRouteImport.update({
+  id: '/portfolio/$userId',
+  path: '/portfolio/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedMentorIndexRoute =
   AuthenticatedMentorIndexRouteImport.update({
     id: '/',
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/api/mentor': typeof ApiMentorRoute
   '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
+  '/portfolio/$userId': typeof PortfolioUserIdRoute
   '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/mentor/': typeof AuthenticatedMentorIndexRoute
 }
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/api/mentor': typeof ApiMentorRoute
   '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
+  '/portfolio/$userId': typeof PortfolioUserIdRoute
   '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/mentor': typeof AuthenticatedMentorIndexRoute
 }
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/api/mentor': typeof ApiMentorRoute
   '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
+  '/portfolio/$userId': typeof PortfolioUserIdRoute
   '/_authenticated/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/_authenticated/mentor/': typeof AuthenticatedMentorIndexRoute
 }
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/api/mentor'
     | '/api/quiz'
     | '/api/resume'
+    | '/portfolio/$userId'
     | '/mentor/$threadId'
     | '/mentor/'
   fileRoutesByTo: FileRoutesByTo
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/api/mentor'
     | '/api/quiz'
     | '/api/resume'
+    | '/portfolio/$userId'
     | '/mentor/$threadId'
     | '/mentor'
   id:
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/api/mentor'
     | '/api/quiz'
     | '/api/resume'
+    | '/portfolio/$userId'
     | '/_authenticated/mentor/$threadId'
     | '/_authenticated/mentor/'
   fileRoutesById: FileRoutesById
@@ -335,6 +347,7 @@ export interface RootRouteChildren {
   ApiMentorRoute: typeof ApiMentorRoute
   ApiQuizRoute: typeof ApiQuizRoute
   ApiResumeRoute: typeof ApiResumeRoute
+  PortfolioUserIdRoute: typeof PortfolioUserIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -500,6 +513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiResumeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portfolio/$userId': {
+      id: '/portfolio/$userId'
+      path: '/portfolio/$userId'
+      fullPath: '/portfolio/$userId'
+      preLoaderRoute: typeof PortfolioUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/mentor/': {
       id: '/_authenticated/mentor/'
       path: '/'
@@ -577,6 +597,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMentorRoute: ApiMentorRoute,
   ApiQuizRoute: ApiQuizRoute,
   ApiResumeRoute: ApiResumeRoute,
+  PortfolioUserIdRoute: PortfolioUserIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
