@@ -6,7 +6,8 @@ the real/coding mock interviews. The React app only forwards signed-in requests.
 """
 
 import json
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -14,7 +15,24 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 from . import config, db, gateway, prompts, rag, schemas, scoring, streams
 
-app = FastAPI(title="CareerOS AI service", version="1.0.0", docs_url=None, redoc_url=None)
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    """Open the database pool once per process and close it on shutdown."""
+    await db.open_pool()
+    try:
+        yield
+    finally:
+        await db.close_pool()
+        await gateway.close_client()
+
+
+app = FastAPI(
+    title="CareerOS AI service",
+    version="1.0.0",
+    docs_url=None,
+    redoc_url=None,
+    lifespan=lifespan,
+)
 
 UI_HEADERS = {
     "x-vercel-ai-ui-message-stream": "v1",
@@ -36,15 +54,6 @@ async def invalid_reply_handler(_: Request, exc: scoring.QuizInvalid) -> JSONRes
     )
 
 
-@app.on_event("startup")
-async def startup() -> None:
-    await db.open_pool()
-
-
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    await db.close_pool()
-    await gateway.close_client()
 
 
 # ---------------------------------------------------------------- helpers ----
