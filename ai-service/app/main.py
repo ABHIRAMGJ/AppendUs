@@ -347,25 +347,25 @@ async def interview(request: Request) -> JSONResponse:
             prompt=f"{profile}\n\nTRANSCRIPT:\n{transcript}",
             name="interview_eval",
         )
-        row = await db.fetch_one(
-            """
-            insert into public.interview_sessions
-              (user_id, mode, target_role, package, experience, questions, answers, result, proctor)
-            values (%s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s::jsonb, %s::jsonb)
-            returning id
-            """,
-            (
-                user_id,
-                mode,
-                text(body.get("role"), 120) or None,
-                text(body.get("package"), 60) or None,
-                text(body.get("experience"), 60) or None,
-                json.dumps(body.get("questions") or [], default=str),
-                json.dumps(body.get("answers") or [], default=str),
-                json.dumps(result, default=str),
-                json.dumps(body.get("proctor"), default=str) if body.get("proctor") else None,
-            ),
+        rows = await db.insert(
+            token,
+            "interview_sessions",
+            [
+                {
+                    "user_id": user_id,
+                    "mode": mode,
+                    "target_role": text(body.get("role"), 120) or None,
+                    "package": text(body.get("package"), 60) or None,
+                    "experience": text(body.get("experience"), 60) or None,
+                    "questions": body.get("questions") or [],
+                    "answers": body.get("answers") or [],
+                    "result": result,
+                    "proctor": body.get("proctor") if body.get("proctor") else None,
+                }
+            ],
+            returning=True,
         )
+        row = rows[0] if rows else None
         return JSONResponse({"id": str(row["id"]) if row else None, "result": result})
 
     if action == "proctor":
