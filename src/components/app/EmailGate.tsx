@@ -72,7 +72,8 @@ function VerifyScreen({ email }: { email: string }) {
   return (
     <div className="flex min-h-screen flex-col px-6 py-6">
       <div className="flex items-center justify-between"><Logo /><ThemeToggle /></div>
-      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">
+      <div className="mx-auto flex w-full max-w-sm flex-1 items-center justify-center py-10">
+        <div className="surface w-full p-8">
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-accent text-accent-foreground">
           <Mail className="h-8 w-8" />
         </div>
@@ -90,7 +91,8 @@ function VerifyScreen({ email }: { email: string }) {
         </form>
         <div className="mt-4 flex justify-between text-sm">
           <button type="button" onClick={sendCode} className="font-medium text-primary hover:underline">Resend code</button>
-          <button type="button" onClick={signOut} className="text-muted-foreground hover:underline">Sign out</button>
+          <button type="button" onClick={signOut} className="font-medium text-foreground/70 hover:text-foreground hover:underline">Sign out</button>
+        </div>
         </div>
       </div>
     </div>
