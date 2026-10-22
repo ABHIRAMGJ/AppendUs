@@ -50,6 +50,13 @@
       "when": 1792688546193,
       "tag": "0006_signup_email_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792688911295,
+      "tag": "0007_email_verified",
+      "breakpoints": true
     }
   ]
 }
