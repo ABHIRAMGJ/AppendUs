@@ -391,6 +391,30 @@ export type Database = {
         }
         Relationships: []
       }
+      signup_codes: {
+        Row: {
+          attempts: number
+          code_hash: string
+          email: string
+          expires_at: string
+          sent_at: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          email: string
+          expires_at: string
+          sent_at?: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          email?: string
+          expires_at?: string
+          sent_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
