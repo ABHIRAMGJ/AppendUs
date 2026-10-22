@@ -16,6 +16,7 @@ import { ThemeProvider, themeInitScript } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalAssistant } from "@/components/assistant/GlobalAssistant";
 import { supabase } from "@/integrations/supabase/client";
+import { AnimatedBackground } from "@/components/animated/AnimatedBackground";
 
 function NotFoundComponent() {
   return (
@@ -133,7 +134,12 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <Outlet />
+        <div className="relative min-h-screen">
+          <AnimatedBackground />
+          <div className="relative z-10">
+            <Outlet />
+          </div>
+        </div>
         <GlobalAssistant />
         <Toaster richColors position="top-right" />
       </ThemeProvider>
