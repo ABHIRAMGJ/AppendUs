@@ -11,6 +11,20 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { authHeaders } from "@/lib/data";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const TOP_ROLES = [
+  "Software Engineer",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "Data Analyst",
+  "Data Scientist",
+  "Machine Learning Engineer",
+  "DevOps Engineer",
+  "Cloud Engineer",
+  "UI/UX Designer",
+];
 
 export const Route = createFileRoute("/_authenticated/resume")({
   head: () => ({ meta: [{ title: "AI Resume Analyzer — AI CareerOS" }, { name: "description", content: "Get evidence-based resume feedback for your target role." }] }),
@@ -112,7 +126,14 @@ function Resume() {
             <p className="text-xs text-muted-foreground">Drag & drop or click. PDF, DOCX or TXT (max 5MB)</p>
           </button>
           <input ref={inputRef} type="file" accept=".pdf,.docx,.txt,.md" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-          <div className="space-y-1.5"><Label>Target job role</Label><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Software Engineer" /></div>
+          <div className="space-y-1.5"><Label>Target job role</Label>
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger>
+              <SelectContent>
+                {TOP_ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-1.5"><Label>Job description</Label><Textarea rows={6} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job description for a precise match" /></div>
           <Button variant="hero" className="w-full" disabled={loading || text.trim().length < 100} onClick={analyze}>
             {loading ? "Analyzing..." : "Analyze Resume"}
