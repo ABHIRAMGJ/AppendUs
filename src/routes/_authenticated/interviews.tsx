@@ -146,7 +146,7 @@ function useProctor(stream: MediaStream, video: React.RefObject<HTMLVideoElement
     }, 12000);
     return () => clearInterval(t);
   }, [video]);
-  return { tabSwitches, warning, report: () => (proc.report()) };
+  return { tabSwitches, warning, report: () => ({ tab_switches: tabSwitches, ...checks.current }) };
 }
 
 function CameraCard({ video, warning, tabSwitches, clock }: { video: React.RefObject<HTMLVideoElement | null>; warning: string; tabSwitches: number; clock: string }) {
