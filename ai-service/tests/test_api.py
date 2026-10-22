@@ -180,7 +180,7 @@ def test_interview_evaluate_saves_a_recomputed_report(monkeypatch):
     )
     assert res.status_code == 200
     result = res.json()["result"]
-    assert result["overall_percentage"] == 60  # (90 + 30) / 2
+    assert result["overall_percentage"] == 45  # (90 + 0) / 2 — the skipped answer scores nothing
     assert result["items"][1]["your_answer"] == "Skipped"
     assert result["stats"]["skipped"] == 1
 
