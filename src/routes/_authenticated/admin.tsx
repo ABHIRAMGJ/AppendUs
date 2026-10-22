@@ -123,14 +123,14 @@ function Admin() {
   const health = [
     ["Users & profiles", data?.profiles], ["Job applications", data?.jobs], ["Projects", data?.projects],
     ["Resume analyses", data?.analyses], ["Mentor threads", data?.threads], ["Assessment attempts", data?.attempts],
-    ["Code submissions", data?.submissions], ["Feature flags", data?.flags], ["Audit log", data?.actions],
+    ["Code submissions", data?.submissions], ["Interview sessions", data?.sessions], ["Feature flags", data?.flags], ["Audit log", data?.actions],
   ] as const;
 
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader icon={ShieldCheck} title="Admin Console" description="Manage users, roles, feature flags and platform health" />
       {error && <p className="text-destructive">{(error as Error).message}</p>}
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-7">
+      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-8">
         {stats.map(([l, v]) => (
           <div key={l} className="surface p-4"><p className="font-display text-2xl font-bold text-primary">{v ?? "–"}</p><p className="text-xs text-muted-foreground">{l}</p></div>
         ))}
