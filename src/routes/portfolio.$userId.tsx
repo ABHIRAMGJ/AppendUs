@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/portfolio/$userId")({
   head: () => ({
     meta: [
-      { title: "Portfolio — AI CareerOS" },
-      { name: "description", content: "A public project portfolio built with AI CareerOS." },
-      { property: "og:title", content: "Portfolio — AI CareerOS" },
-      { property: "og:description", content: "A public project portfolio built with AI CareerOS." },
+      { title: "Portfolio — AppendUs" },
+      { name: "description", content: "A public project portfolio built with AppendUs." },
+      { property: "og:title", content: "Portfolio — AppendUs" },
+      { property: "og:description", content: "A public project portfolio built with AppendUs." },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -53,7 +53,7 @@ function Portfolio() {
           <div className="grid h-12 w-12 place-items-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow"><FolderKanban className="h-6 w-6" /></div>
           <div>
             <h1 className="text-2xl font-bold">Project Portfolio</h1>
-            <p className="text-sm text-muted-foreground">Public projects shared by this AI CareerOS member</p>
+            <p className="text-sm text-muted-foreground">Public projects shared by this AppendUs member</p>
           </div>
         </div>
         {isLoading && <p className="mt-10 text-sm text-muted-foreground">Loading...</p>}
@@ -78,7 +78,7 @@ function Portfolio() {
           ))}
         </div>
       </main>
-      <footer className="border-t py-6 text-center text-xs text-muted-foreground">Built with AI CareerOS</footer>
+      <footer className="border-t py-6 text-center text-xs text-muted-foreground">Built with AppendUs</footer>
     </div>
   );
 }

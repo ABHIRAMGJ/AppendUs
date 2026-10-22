@@ -30,7 +30,7 @@ function Thread() {
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center gap-3 border-b px-4 py-3">
         <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-primary text-primary-foreground"><GraduationCap className="h-5 w-5" /></div>
-        <div><p className="font-display text-sm font-semibold">CareerOS AI Mentor</p><p className="text-xs text-muted-foreground">Your personal career coach</p></div>
+        <div><p className="font-display text-sm font-semibold">AppendUs AI Mentor</p><p className="text-xs text-muted-foreground">Your personal career coach</p></div>
       </div>
       <ChatPanel
         key={threadId}

@@ -13,7 +13,7 @@ import { Shimmer } from "@/components/ai-elements/shimmer";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/assessments")({
-  head: () => ({ meta: [{ title: "Skill Assessments — AI CareerOS" }, { name: "description", content: "Test your skills with scored AI quizzes and track your progress." }] }),
+  head: () => ({ meta: [{ title: "Skill Assessments — AppendUs" }, { name: "description", content: "Test your skills with scored AI quizzes and track your progress." }] }),
   component: Assessments,
 });
 

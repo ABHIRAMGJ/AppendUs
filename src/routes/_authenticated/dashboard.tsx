@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import hero from "@/assets/hero-student.jpg";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — AI CareerOS" }, { name: "description", content: "Your career progress at a glance." }] }),
+  head: () => ({ meta: [{ title: "Dashboard — AppendUs" }, { name: "description", content: "Your career progress at a glance." }] }),
   component: Dashboard,
 });
 

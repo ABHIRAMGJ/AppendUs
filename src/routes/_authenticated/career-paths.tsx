@@ -10,7 +10,7 @@ import { AiOutput, useGenerate } from "@/components/app/AiResult";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/career-paths")({
-  head: () => ({ meta: [{ title: "Career Path Finder — AI CareerOS" }, { name: "description", content: "Discover careers by interest, skills and timeline." }] }),
+  head: () => ({ meta: [{ title: "Career Path Finder — AppendUs" }, { name: "description", content: "Discover careers by interest, skills and timeline." }] }),
   component: CareerPaths,
 });
 

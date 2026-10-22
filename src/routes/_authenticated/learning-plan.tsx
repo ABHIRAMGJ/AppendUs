@@ -10,7 +10,7 @@ import { AiOutput, useGenerate } from "@/components/app/AiResult";
 import { useProfile } from "@/lib/data";
 
 export const Route = createFileRoute("/_authenticated/learning-plan")({
-  head: () => ({ meta: [{ title: "Learning Plan — AI CareerOS" }, { name: "description", content: "Your personalised AI learning roadmap." }] }),
+  head: () => ({ meta: [{ title: "Learning Plan — AppendUs" }, { name: "description", content: "Your personalised AI learning roadmap." }] }),
   component: LearningPlan,
 });
 

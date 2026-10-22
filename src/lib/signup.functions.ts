@@ -21,15 +21,15 @@ async function admin() {
 async function sendWithResend(to: string, code: string) {
   const key = process.env["RESEND_API_KEY"];
   if (!key) throw new Error("Email sending is not configured.");
-  const from = process.env["RESEND_FROM"] ?? "AI CareerOS <onboarding@resend.dev>";
+  const from = process.env["RESEND_FROM"] ?? "AppendUs <onboarding@resend.dev>";
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from,
       to: [to],
-      subject: `${code} is your AI CareerOS code`,
-      html: `<div style="font-family:Arial,sans-serif;background:#ffffff;padding:24px"><h2 style="color:#4f46e5">AI CareerOS</h2><p>Your verification code is:</p><p style="font-size:32px;font-weight:bold;letter-spacing:6px">${code}</p><p>It expires in ${CODE_TTL_MINUTES} minutes. If you didn't ask for this, ignore this email.</p></div>`,
+      subject: `${code} is your AppendUs code`,
+      html: `<div style="font-family:Arial,sans-serif;background:#ffffff;padding:24px"><h2 style="color:#4f46e5">AppendUs</h2><p>Your verification code is:</p><p style="font-size:32px;font-weight:bold;letter-spacing:6px">${code}</p><p>It expires in ${CODE_TTL_MINUTES} minutes. If you didn't ask for this, ignore this email.</p></div>`,
     }),
   });
   if (!res.ok) {

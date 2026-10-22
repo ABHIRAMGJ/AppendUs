@@ -1,1 +1,1 @@
-"""CareerOS AI service package (Python + FastAPI)."""
+"""AppendUs AI service package (Python + FastAPI)."""

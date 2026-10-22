@@ -14,7 +14,7 @@ import { AiOutput, useGenerate } from "@/components/app/AiResult";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/coding")({
-  head: () => ({ meta: [{ title: "Coding Practice — AI CareerOS" }, { name: "description", content: "Solve coding problems with test cases and get AI code review." }] }),
+  head: () => ({ meta: [{ title: "Coding Practice — AppendUs" }, { name: "description", content: "Solve coding problems with test cases and get AI code review." }] }),
   component: Coding,
 });
 

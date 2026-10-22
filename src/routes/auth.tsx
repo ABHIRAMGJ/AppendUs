@@ -20,10 +20,10 @@ export const Route = createFileRoute("/auth")({
   validateSearch: search,
   head: () => ({
     meta: [
-      { title: "Sign in — AI CareerOS" },
-      { name: "description", content: "Sign in or create your free AI CareerOS account." },
-      { property: "og:title", content: "Sign in — AI CareerOS" },
-      { property: "og:description", content: "Sign in or create your free AI CareerOS account." },
+      { title: "Sign in — AppendUs" },
+      { name: "description", content: "Sign in or create your free AppendUs account." },
+      { property: "og:title", content: "Sign in — AppendUs" },
+      { property: "og:description", content: "Sign in or create your free AppendUs account." },
     ],
   }),
   component: AuthPage,
@@ -231,7 +231,7 @@ function AuthPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/30 to-transparent" />
         <div className="absolute bottom-0 p-12 text-primary-foreground">
           <h2 className="text-3xl font-bold">Plan. Learn. Prove. Get hired.</h2>
-          <p className="mt-2 max-w-md opacity-90">Join learners using AI CareerOS to turn career goals into real progress.</p>
+          <p className="mt-2 max-w-md opacity-90">Join learners using AppendUs to turn career goals into real progress.</p>
         </div>
       </div>
     </div>

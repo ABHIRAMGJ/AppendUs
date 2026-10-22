@@ -11,10 +11,10 @@ import { ThemeToggle } from "@/lib/theme";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Set a new password — AI CareerOS" },
-      { name: "description", content: "Choose a new password for your AI CareerOS account." },
-      { property: "og:title", content: "Set a new password — AI CareerOS" },
-      { property: "og:description", content: "Choose a new password for your AI CareerOS account." },
+      { title: "Set a new password — AppendUs" },
+      { name: "description", content: "Choose a new password for your AppendUs account." },
+      { property: "og:title", content: "Set a new password — AppendUs" },
+      { property: "og:description", content: "Choose a new password for your AppendUs account." },
     ],
   }),
   component: Reset,

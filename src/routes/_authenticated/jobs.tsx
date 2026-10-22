@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
-  head: () => ({ meta: [{ title: "Job Tracker — AI CareerOS" }, { name: "description", content: "Track and manage your job applications." }] }),
+  head: () => ({ meta: [{ title: "Job Tracker — AppendUs" }, { name: "description", content: "Track and manage your job applications." }] }),
   component: Jobs,
 });
 

@@ -9,7 +9,7 @@ import { AiOutput, useGenerate } from "@/components/app/AiResult";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/companies")({
-  head: () => ({ meta: [{ title: "Company Preparation — AI CareerOS" }, { name: "description", content: "Interview preparation guides for top companies." }] }),
+  head: () => ({ meta: [{ title: "Company Preparation — AppendUs" }, { name: "description", content: "Interview preparation guides for top companies." }] }),
   component: Companies,
 });
 

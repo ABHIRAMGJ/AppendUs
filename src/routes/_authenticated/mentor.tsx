@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/mentor")({
-  head: () => ({ meta: [{ title: "CareerOS AI Mentor — AI CareerOS" }, { name: "description", content: "Your personal AI career coach." }] }),
+  head: () => ({ meta: [{ title: "AppendUs AI Mentor — AppendUs" }, { name: "description", content: "Your personal AI career coach." }] }),
   component: MentorLayout,
 });
 

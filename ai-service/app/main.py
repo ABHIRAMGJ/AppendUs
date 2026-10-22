@@ -1,4 +1,4 @@
-"""CareerOS AI service — Python + FastAPI.
+"""AppendUs AI service — Python + FastAPI.
 
 Every AI feature of the platform is served from here: the Global Assistant, the
 AI Mentor, long-form generators, quizzes, resume analysis with pgvector RAG, and
@@ -27,7 +27,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="CareerOS AI service",
+    title="AppendUs AI service",
     version="1.0.0",
     docs_url=None,
     redoc_url=None,

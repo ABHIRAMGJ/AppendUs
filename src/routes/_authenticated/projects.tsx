@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/projects")({
-  head: () => ({ meta: [{ title: "Projects & Portfolio — AI CareerOS" }, { name: "description", content: "Build and track real-world portfolio projects." }] }),
+  head: () => ({ meta: [{ title: "Projects & Portfolio — AppendUs" }, { name: "description", content: "Build and track real-world portfolio projects." }] }),
   component: Projects,
 });
 

@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AI CareerOS — Your Career Operating System" },
+      { title: "AppendUs — Your Career Operating System" },
       { name: "description", content: "AI-powered career guidance, learning plans, resume analysis, mock interviews and job tracking." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

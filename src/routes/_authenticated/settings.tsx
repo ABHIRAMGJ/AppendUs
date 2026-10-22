@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings & Profile — AI CareerOS" }, { name: "description", content: "Manage your profile, appearance and account." }] }),
+  head: () => ({ meta: [{ title: "Settings & Profile — AppendUs" }, { name: "description", content: "Manage your profile, appearance and account." }] }),
   component: Settings,
 });
 
