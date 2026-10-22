@@ -17,6 +17,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { GlobalAssistant } from "@/components/assistant/GlobalAssistant";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimatedBackground } from "@/components/animated/AnimatedBackground";
+import { PageLoader, ScrollFx } from "@/components/animated/PageFx";
 
 function NotFoundComponent() {
   return (
@@ -136,6 +137,8 @@ function RootComponent() {
       <ThemeProvider>
         <div className="relative min-h-screen">
           <AnimatedBackground />
+          <ScrollFx />
+          <PageLoader />
           <div className="relative z-10">
             <Outlet />
           </div>
