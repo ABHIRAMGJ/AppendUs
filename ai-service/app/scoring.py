@@ -53,9 +53,17 @@ def finalize_resume_analysis(result: Mapping[str, Any], resume_text: str) -> dic
     out.update(parts)
     out["overall_score"] = int(round(sum(parts.values()) / len(parts)))
 
-    matched = [k for k in _clean_list(out.get("matched_keywords"), 40) if contains_term(resume_text, k)]
-    claimed_missing = _clean_list(out.get("missing_keywords"), 40)
-    missing = [k for k in claimed_missing if not contains_term(resume_text, k)]
+    matched_claim = _clean_list(out.get("matched_keywords"), 40)
+    matched = [k for k in matched_claim if contains_term(resume_text, k)]
+    # Anything the model claimed as a match but that is not really in the resume is missing.
+    not_in_resume = [k for k in matched_claim if not contains_term(resume_text, k)]
+
+    missing: list[str] = []
+    for keyword in _clean_list(out.get("missing_keywords"), 40) + not_in_resume:
+        if contains_term(resume_text, keyword):
+            continue
+        if keyword.lower() not in {m.lower() for m in missing}:
+            missing.append(keyword)
 
     out["matched_keywords"] = matched
     out["missing_keywords"] = missing
@@ -110,15 +118,13 @@ def finalize_interview_eval(
     for index, answer in enumerate(answers):
         source = raw_items[index] if isinstance(raw_items, Sequence) and index < len(raw_items) else {}
         question = str(answer.get("question") or (source or {}).get("question") or "")[:2000]
-        if answer.get("skipped"):
-            given = "Skipped"
-        else:
-            given = str(answer.get("answer") or "").strip() or "No answer"
+        given = "Skipped" if answer.get("skipped") else (str(answer.get("answer") or "").strip() or "No answer")
         items.append(
             {
                 "question": question,
                 "your_answer": given[:6000],
-                "score": clamp_score((source or {}).get("score")),
+                # A skipped answer scores nothing, however generous the model was.
+                "score": 0 if answer.get("skipped") else clamp_score((source or {}).get("score")),
                 "feedback": str((source or {}).get("feedback") or "").strip()[:1200],
                 "ideal_answer": str((source or {}).get("ideal_answer") or "").strip()[:2000],
             }
