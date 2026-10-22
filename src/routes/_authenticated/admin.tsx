@@ -64,7 +64,7 @@ function Admin() {
 
   async function logAction(action: string, target?: string, detail: Record<string, unknown> = {}) {
     const { data: u } = await supabase.auth.getUser();
-    if (u.user) await supabase.from("admin_actions").insert({ admin_id: u.user.id, action, target: target ?? null, detail });
+    if (u.user) await supabase.from("admin_actions").insert({ admin_id: u.user.id, action, target: target ?? null, detail: detail as never });
   }
 
   async function setRole(userId: string, email: string, makeAdmin: boolean) {
