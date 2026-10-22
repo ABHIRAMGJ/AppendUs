@@ -17,9 +17,9 @@ MODULE_LIST = """Available modules (link with markdown, e.g. [Resume Analyzer](/
 - Settings (/settings) – profile, light/dark theme, account
 Not available yet: Community (/community) is coming soon. Sign in at /auth."""
 
-ASSISTANT_SYSTEM = f"""You are the AI CareerOS Global Assistant. Help users understand, navigate and use the platform. Be friendly, concise and professional. Use short steps and clickable markdown links to modules.
-The user is currently on page: {{page}}.
-{MODULE_LIST}
+ASSISTANT_SYSTEM = """You are the AI CareerOS Global Assistant. Help users understand, navigate and use the platform. Be friendly, concise and professional. Use short steps and clickable markdown links to modules.
+The user is currently on page: {page}.
+""" + MODULE_LIST + """
 Clearly distinguish available vs coming-soon features. Never invent features. For deep career coaching, suggest the [AI Mentor](/mentor). If you can't help with an error, suggest refreshing, signing in again, or describing the exact steps."""
 
 MENTOR_SYSTEM = """You are CareerOS AI Mentor — a personalised, honest career coach for students, graduates, job seekers and career switchers (with strong knowledge of the Indian education system and global tech careers).
@@ -41,7 +41,7 @@ GENERATE_SYSTEM = (
     "Never fabricate sources, links, job listings or statistics."
 )
 
-RESUME_SYSTEM = """You analyse resumes strictly from evidence in the provided excerpts, which were retrieved by semantic search against the target role and job description. Never invent experience. For improved_bullets, rewrite 3-6 weak bullets from the excerpts into ATS-friendly, quantified versions without adding facts that are not there (use placeholders like [X%] where a number is needed). Scores are 0-100 and reflect your honest assessment, not a guarantee of ATS results. Each strength/improvement should cite evidence from the excerpts when possible."""
+RESUME_SYSTEM = """You analyse resumes strictly from evidence in the provided excerpts, which were retrieved by semantic search against the target role and job description. Never invent experience. For improved_bullets, rewrite 3-6 weak bullets from the excerpts into ATS-friendly, quantified versions without adding facts that are not there (use placeholders like [X%] where a number is needed). Scores are 0-100 and reflect your honest assessment, not a guarantee of ATS results. Each strength/improvement should cite evidence from the excerpts when possible. matched_keywords may only contain terms that literally appear in the excerpts; anything the excerpts do not contain belongs in missing_keywords."""
 
 QUIZ_SYSTEM = """You create skill assessment quizzes. Write exactly 5 multiple-choice questions on the given topic at the given level. Each question has exactly 4 options, one correct answer (correct_index 0-3) and a short explanation of why the answer is correct. Questions must test real understanding, be unambiguous, and have exactly one defensible correct option. Never repeat questions."""
 
@@ -49,28 +49,37 @@ REAL_INTERVIEW_GENERATOR = """You are a real interviewer for the given role. Wri
 
 CODING_GENERATOR = """You are a technical interviewer. Write exactly 3 coding problems for the candidate's role and experience: one "Easy", one "Medium", one "Hard" (in that order). Difficulty must match the package and experience. Each has a clear statement and 1-2 input/output examples. Problems must be solvable in any common language."""
 
-EVALUATOR_SYSTEM = """You are a strict, senior interviewer evaluating a mock {kind} interview honestly. Score each answer 0-100 strictly like a real hiring panel (skipped or empty = 0; vague or generic answers score low). Give direct, specific feedback naming exactly what was missing. overall_percentage is the weighted average 0-100. {coding_note} communication_level must be one of "Beginner", "Intermediate", "Good", "Fluent", based on grammar, clarity and structure of the answers (spoken answers are speech-to-text, ignore transcription punctuation). Keep your_answer as the candidate's answer verbatim (or "Skipped")."""
+EVALUATOR_SYSTEM = """You are a strict, senior interviewer evaluating a mock {kind} interview honestly. Score each answer 0-100 strictly like a real hiring panel (skipped or empty = 0; vague or generic answers score low). Give direct, specific feedback naming exactly what was missing. {coding_note} communication_level must be one of "Beginner", "Intermediate", "Good", "Fluent", based on grammar, clarity and structure of the answers (spoken answers are speech-to-text, ignore transcription punctuation). Keep your_answer as the candidate's answer verbatim (or "Skipped")."""
 
 PROCTOR_SYSTEM = """You are an exam proctor looking at a webcam frame. phone_visible is true only if a mobile phone is clearly visible. face_visible true if a person's face is visible. multiple_people true if more than one person is visible."""
 
+COMMUNICATION_LEVELS = ("Beginner", "Intermediate", "Good", "Fluent")
+
+
+def _text(context: Mapping[str, object], key: str, default: str = "") -> str:
+    value = context.get(key)
+    if value is None:
+        return default
+    return str(value).strip() or default
+
 
 def assistant_system(context: Mapping[str, object]) -> str:
-    return ASSISTANT_SYSTEM.replace("{page}", str(context.get("page") or "/"))
+    return ASSISTANT_SYSTEM.replace("{page}", _text(context, "page", "/"))
 
 
 def interview_system(context: Mapping[str, object]) -> str:
     return INTERVIEW_SYSTEM.format(
-        role=context.get("role") or "Software Engineer",
-        type=context.get("type") or "Technical",
-        difficulty=context.get("difficulty") or "Medium",
-        company=context.get("company") or "general",
+        role=_text(context, "role", "Software Engineer"),
+        type=_text(context, "type", "Technical"),
+        difficulty=_text(context, "difficulty", "Medium"),
+        company=_text(context, "company", "general"),
     )
 
 
 def quiz_chat_system(context: Mapping[str, object]) -> str:
     return QUIZ_CHAT_SYSTEM.format(
-        topic=context.get("topic") or "General programming",
-        level=context.get("level") or "Beginner",
+        topic=_text(context, "topic", "General programming"),
+        level=_text(context, "level", "Beginner"),
     )
 
 
@@ -85,65 +94,97 @@ def system_for(mode: str, context: Mapping[str, object]) -> str:
 def mentor_system(profile: Mapping[str, object] | None) -> str:
     if not profile:
         return MENTOR_SYSTEM
-    text = (
-        "\nUser profile: "
-        f"name={profile.get('full_name') or 'unknown'}, "
-        f"education={profile.get('education_level') or 'unknown'}, "
-        f"target role={profile.get('target_role') or 'unknown'}, "
-        f"current skills={profile.get('skills') or 'unknown'}, "
-        f"weekly study hours={profile.get('weekly_hours') or 'unknown'}."
+    fields = (
+        ("name", "full_name"),
+        ("education", "education_level"),
+        ("target role", "target_role"),
+        ("current skills", "skills"),
+        ("weekly study hours", "weekly_hours"),
     )
-    return MENTOR_SYSTEM + text
+    parts = [f"{label}={_text(profile, key, 'unknown')}" for label, key in fields]
+    return MENTOR_SYSTEM + "\nUser profile: " + ", ".join(parts) + "."
 
 
 def evaluator_system(mode: str) -> str:
     coding = mode == "coding"
-    return EVALUATOR_SYSTEM.format(
-        kind="coding" if coding else "",
-        coding_note=(
-            "Judge code for correctness, edge cases and complexity by reading it; "
-            "do not claim you executed it. ideal_answer should be a short correct approach with code."
-            if coding
-            else "ideal_answer is a strong model answer in 2-5 sentences."
-        ),
+    coding_note = (
+        "Judge code for correctness, edge cases and complexity by reading it; do not claim you "
+        "executed it. ideal_answer should be a short correct approach with code."
+        if coding
+        else "ideal_answer is a strong model answer in 2-5 sentences."
+    )
+    return EVALUATOR_SYSTEM.format(kind="coding" if coding else "", coding_note=coding_note)
+
+
+# ---- long-form generators: task -> brief -------------------------------------
+
+
+def _plan(i: Mapping[str, str]) -> str:
+    return (
+        "Create a personalised learning plan.\n"
+        f"Goal role: {i.get('role')}. Current level: {i.get('level')}. "
+        f"Hours per week: {i.get('hours')}. Duration: {i.get('days') or '90'} days. "
+        f"Existing skills: {i.get('skills') or 'none listed'}.\n"
+        'Format in markdown: a short overview, then phases (### Phase N — title (Weeks x–y)) each with '
+        'topics, a hands-on project, and free resource types (no fake URLs). Then a "This week" '
+        "day-by-day plan (Mon–Sun) fitting the hours. End with milestones to prove skills."
     )
 
 
-# ---- long-form generators (task -> brief) ------------------------------------
+def _company(i: Mapping[str, str]) -> str:
+    role = f" for the role {i['role']}" if i.get("role") else ""
+    return (
+        f"Write an interview preparation guide for {i.get('company')}{role}.\n"
+        "Markdown sections: Overview, Typical interview process (say it may vary and should be "
+        "verified), Topics to prepare, 8 sample questions with short answer hints, Culture & values "
+        "tips, 2-week prep checklist. Do not invent precise statistics."
+    )
 
-TASKS = {
-    "plan": lambda i: (
-        "Create a personalised learning plan.\n"
-        f"Goal role: {i.get('role')}. Current level: {i.get('level')}. Hours per week: {i.get('hours')}. "
-        f"Duration: {i.get('days') or '90'} days. Existing skills: {i.get('skills') or 'none listed'}.\n"
-        "Format in markdown: a short overview, then phases (### Phase N — title (Weeks x–y)) each with topics, "
-        "a hands-on project, and free resource types (no fake URLs). Then a \"This week\" day-by-day plan "
-        "(Mon–Sun) fitting the hours. End with milestones to prove skills."
-    ),
-    "company": lambda i: (
-        f"Write an interview preparation guide for {i.get('company')}"
-        f"{f' for the role {i.get(\"role\")}' if i.get('role') else ''}.\n"
-        "Markdown sections: Overview, Typical interview process (say it may vary and should be verified), "
-        "Topics to prepare, 8 sample questions with short answer hints, Culture & values tips, "
-        "2-week prep checklist. Do not invent precise statistics."
-    ),
-    "code": lambda i: (
-        f"Review this {i.get('language')} solution to the problem \"{i.get('problem)}\".\n"
-        f"```{i.get('language')}\n{i.get('code')}\n```\n"
+
+def _code(i: Mapping[str, str]) -> str:
+    language = i.get("language") or "text"
+    return (
+        f'Review this {language} solution to the problem "{i.get("problem")}".\n'
+        f"```{language}\n{i.get('code')}\n```\n"
         "Markdown: Verdict (likely correct / has bugs), Bugs or edge cases, Time & space complexity, "
-        "Improved solution in a code block, Tips. Be concise. You cannot run code — say this is a static review."
-    ),
-    "pathways": lambda i: (
+        "Improved solution in a code block, Tips. Be concise. You cannot run code — say this is a "
+        "static review."
+    )
+
+
+def _pathways(i: Mapping[str, str]) -> str:
+    return (
         f"A user's starting point: {i.get('stage')}. Interests: {i.get('interest') or 'not specified'}.\n"
         "Give 4-6 realistic pathways (do not declare one universally best). For each, markdown: "
-        "### Path name, Prerequisites, Required skills, Approximate timeline, Approximate cost range (rough, India), "
-        "Pros / trade-offs, Next actionable step this week. End with a short \"How to choose\" guide."
-    ),
-    "career": lambda i: (
-        f"Explain the career path for \"{i.get('role')}\" for someone in India and globally.\n"
-        "Markdown: What they do, Required skills (technical + soft), Education routes (after 12th, diploma, "
-        "B.Tech, career switch), Step-by-step 6-12 month roadmap, Portfolio project ideas, "
-        "Typical entry salary range in India (clearly marked as a rough estimate that varies), Growth path. "
-        "Keep it practical."
-    ),
+        "### Path name, Prerequisites, Required skills, Approximate timeline, Approximate cost range "
+        '(rough, India), Pros / trade-offs, Next actionable step this week. End with a short "How to '
+        'choose" guide.'
+    )
+
+
+def _career(i: Mapping[str, str]) -> str:
+    return (
+        f'Explain the career path for "{i.get("role")}" for someone in India and globally.\n'
+        "Markdown: What they do, Required skills (technical + soft), Education routes (after 12th, "
+        "diploma, B.Tech, career switch), Step-by-step 6-12 month roadmap, Portfolio project ideas, "
+        "Typical entry salary range in India (clearly marked as a rough estimate that varies), "
+        "Growth path. Keep it practical."
+    )
+
+
+TASKS = {
+    "plan": _plan,
+    "company": _company,
+    "code": _code,
+    "pathways": _pathways,
+    "career": _career,
 }
+
+
+def brief_for(task: str, raw_input: Mapping[str, object] | None, limit: int = 12000) -> str | None:
+    """Build the generation brief, truncating every input field for safety."""
+    builder = TASKS.get(task)
+    if builder is None:
+        return None
+    cleaned = {k: str(v if v is not None else "")[:limit] for k, v in (raw_input or {}).items()}
+    return builder(cleaned)

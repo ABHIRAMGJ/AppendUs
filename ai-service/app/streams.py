@@ -41,6 +41,6 @@ def plain_text_stream(chunks: AsyncIterator[str]) -> AsyncIterator[str]:
     return gen()
 
 
-def collect_stream(chunks: AsyncIterator[str]) -> str:
+async def collect_stream(chunks: AsyncIterator[str]) -> str:
     """Drain a model stream into one string (used when a reply must be stored)."""
-    raise NotImplementedError
+    return "".join([delta async for delta in chunks if delta])
