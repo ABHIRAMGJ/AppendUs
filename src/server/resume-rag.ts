@@ -7,14 +7,14 @@ const GATEWAY = "https://ai.gateway.lovable.dev";
 export type Chunk = { id: string; text: string };
 export type Retrieved = { requirement: string; evidence: { id: string; score: number }[] };
 
-export function chunkResume(text: string, max = 450): Chunk[] {
+export function chunkResume(text: string, max = 300): Chunk[] {
   const lines = text.replace(/\r/g, "").split(/\n+/).map((l) => l.trim()).filter(Boolean);
   const chunks: string[] = [];
   let cur = "";
   for (const line of lines) {
     for (let i = 0; i < line.length; i += max) {
       const piece = line.slice(i, i + max);
-      if ((cur + " " + piece).length > max && cur) { chunks.push(cur); cur = piece; }
+      if (cur && (cur.length >= 60 || (cur + " " + piece).length > max)) { chunks.push(cur); cur = piece; }
       else cur = cur ? cur + " " + piece : piece;
     }
   }
