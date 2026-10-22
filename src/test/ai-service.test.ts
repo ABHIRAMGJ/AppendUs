@@ -8,7 +8,7 @@ import { aiServiceUrl, checkAiService, toAiService } from "@/server/ai-service";
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.stubGlobal("fetch", globalThis.fetch);
-  delete process.env.AI_SERVICE_URL;
+  delete process.env["AI_SERVICE_URL"];
 });
 
 function sourceFiles(dir: string): string[] {
@@ -44,9 +44,10 @@ describe("AI requests go to the Python service", () => {
     const response = await toAiService(request, "/resume");
 
     expect(calls).toHaveLength(1);
-    expect(calls[0].url).toBe("http://127.0.0.1:8100/resume");
-    expect((calls[0].init.headers as Record<string, string>)["authorization"]).toBe("Bearer session-token");
-    const sent = JSON.parse(new TextDecoder().decode(calls[0].init.body as ArrayBuffer));
+    const first = calls[0] ?? { url: "", init: {} as RequestInit };
+    expect(first.url).toBe("http://127.0.0.1:8100/resume");
+    expect((first.init.headers as Record<string, string>)["authorization"]).toBe("Bearer session-token");
+    const sent = JSON.parse(new TextDecoder().decode(first.init.body as ArrayBuffer));
     expect(sent.role).toBe("Frontend Engineer");
     expect(await response.text()).toBe("analysed");
     expect(response.headers.get("x-vercel-ai-ui-message-stream")).toBe("v1");
