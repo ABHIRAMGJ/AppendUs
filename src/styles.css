@@ -433,3 +433,18 @@
 .fx-ai-orb span:nth-child(3){background:radial-gradient(circle at 50% 75%,color-mix(in oklab,var(--primary) 50%,var(--accent)),transparent 70%);animation-duration:5s}
 @keyframes fx-morph{0%{transform:rotate(0) scale(1);border-radius:42% 58% 63% 37%/45% 40% 60% 55%}50%{transform:rotate(180deg) scale(1.12);border-radius:60% 40% 35% 65%/55% 62% 38% 45%}100%{transform:rotate(360deg) scale(1);border-radius:42% 58% 63% 37%/45% 40% 60% 55%}}
 @media (prefers-reduced-motion:reduce){.fx-reveal,.fx-reveal .grid>*{opacity:1;transform:none;filter:none;transition:none}.fx-ai-orb span{animation:none}}
+
+/* Animated logo (logo-reveal style) */
+.logo-anim{overflow:visible;transform-style:preserve-3d;animation:logo-flip 1.4s cubic-bezier(.2,.8,.2,1) both}
+.logo-hex{stroke-dasharray:100;animation:logo-draw 1.2s ease-out both,logo-fill .6s .8s both}
+.logo-c{stroke-dasharray:100;animation:logo-draw 1s .6s ease-out both}
+.logo-dot{transform-origin:21px 16px;animation:logo-pop .5s 1.3s cubic-bezier(.3,1.6,.5,1) both,logo-pulse 2.4s 2s ease-in-out infinite}
+.group:hover .logo-anim{animation:logo-spin .9s cubic-bezier(.2,.8,.2,1)}
+.fx-loader .logo-anim{width:56px;height:56px;animation:logo-spin 1.6s cubic-bezier(.6,0,.4,1) infinite;filter:drop-shadow(0 0 18px color-mix(in oklab,var(--primary) 70%,transparent))}
+@keyframes logo-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@keyframes logo-fill{from{fill-opacity:0}to{fill-opacity:1}}
+@keyframes logo-pop{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes logo-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes logo-flip{from{transform:perspective(300px) rotateY(-180deg) scale(.4);opacity:0}to{transform:none;opacity:1}}
+@keyframes logo-spin{from{transform:perspective(300px) rotateY(0)}to{transform:perspective(300px) rotateY(360deg)}}
+@media (prefers-reduced-motion:reduce){.logo-anim,.logo-hex,.logo-c,.logo-dot{animation:none}}

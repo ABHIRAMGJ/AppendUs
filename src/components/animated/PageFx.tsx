@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { LogoMark } from "@/components/brand/Logo";
 
 /** Glowing AI orb loader: shows on first load and while switching pages. */
 export function PageLoader() {
@@ -14,6 +15,7 @@ export function PageLoader() {
     <div className={`fx-loader ${show ? "is-on" : ""}`} aria-hidden={!show} role="status">
       <div className="fx-ai-orb">
         <span /><span /><span />
+        <div className="absolute inset-0 flex items-center justify-center"><LogoMark /></div>
       </div>
       <p className="mt-8 font-display text-sm tracking-[0.3em] text-muted-foreground">LOADING</p>
     </div>
