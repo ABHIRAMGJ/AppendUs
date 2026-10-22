@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/interview")({
                 ? `You are a technical interviewer. Write exactly 3 coding problems for the candidate's role and experience: one "Easy", one "Medium", one "Hard" (in that order). Difficulty must match the package and experience. Each has a clear statement and 1-2 input/output examples. Problems must be solvable in any common language.`
                 : `You are a real interviewer for the given role. Write 10-12 questions in this order and with these section names: "Introduction" (1 question: tell me about yourself), "Project Explanation" (2-3 questions about specific projects named in the resume; if none, ask about one project they built), "Role Questions" (3-4 questions core to the target role), "OOPs" (2 questions), "SQL" (2 questions), and "React" (1-2 questions) ONLY if React appears in the resume or the role. Never ask questions from unrelated domains. Calibrate depth to the experience level and package: freshers get fundamentals, experienced candidates get practical/design depth. One question per item, concise, spoken-style.`,
               prompt: profile,
-              output: Output.object({ schema: coding ? codingQs : realQs }),
+              output: Output.object({ schema: (coding ? codingQs : realQs) as typeof realQs }),
             });
             return gw.withRunId(Response.json(await r.output), runId);
           }
