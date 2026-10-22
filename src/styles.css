@@ -415,3 +415,21 @@
 @keyframes fx-tile{0%,100%{opacity:.25}50%{opacity:.9}}
 @keyframes fx-float{0%,100%{translate:0 0}50%{translate:0 -14px}}
 @media (prefers-reduced-motion:reduce){.fx-orb,.fx-ring,.fx-cube,.fx-scene,.fx-face span{animation:none}}
+
+/* Scroll reveal (Metronom-style) */
+.fx-progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:60;transform-origin:left;transform:scaleX(0);background:linear-gradient(90deg,var(--primary),var(--accent))}
+.fx-reveal{opacity:0;transform:translateY(60px) scale(.97);filter:blur(8px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1),filter .9s}
+.fx-reveal .grid>*{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
+.fx-reveal.fx-in,.fx-reveal.fx-in .grid>*{opacity:1;transform:none;filter:none}
+
+/* AI orb loader (Honda AI-style) */
+.fx-loader{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:color-mix(in oklab,var(--background) 88%,transparent);backdrop-filter:blur(14px);opacity:0;pointer-events:none;transition:opacity .5s}
+.fx-loader.is-on{opacity:1;pointer-events:auto}
+.fx-ai-orb{position:relative;width:120px;height:120px;filter:blur(1px) drop-shadow(0 0 40px color-mix(in oklab,var(--primary) 60%,transparent))}
+.fx-ai-orb span{position:absolute;inset:0;border-radius:42% 58% 63% 37%/45% 40% 60% 55%;mix-blend-mode:screen;opacity:.85;animation:fx-morph 3.2s ease-in-out infinite}
+.dark .fx-ai-orb span{mix-blend-mode:lighten}
+.fx-ai-orb span:nth-child(1){background:radial-gradient(circle at 30% 30%,var(--primary),transparent 70%)}
+.fx-ai-orb span:nth-child(2){background:radial-gradient(circle at 70% 40%,var(--accent),transparent 70%);animation-duration:4s;animation-direction:reverse}
+.fx-ai-orb span:nth-child(3){background:radial-gradient(circle at 50% 75%,color-mix(in oklab,var(--primary) 50%,var(--accent)),transparent 70%);animation-duration:5s}
+@keyframes fx-morph{0%{transform:rotate(0) scale(1);border-radius:42% 58% 63% 37%/45% 40% 60% 55%}50%{transform:rotate(180deg) scale(1.12);border-radius:60% 40% 35% 65%/55% 62% 38% 45%}100%{transform:rotate(360deg) scale(1);border-radius:42% 58% 63% 37%/45% 40% 60% 55%}}
+@media (prefers-reduced-motion:reduce){.fx-reveal,.fx-reveal .grid>*{opacity:1;transform:none;filter:none;transition:none}.fx-ai-orb span{animation:none}}
