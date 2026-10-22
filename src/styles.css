@@ -210,8 +210,8 @@
   --anim-aurora-4: rgba(240, 90, 170, 0.18);
   --anim-grid: rgba(70, 60, 200, 0.10);
   --anim-dot: rgba(79, 70, 229, 0.62);
-  --anim-line: rgba(124, 58, 237, 0.30);
-  --anim-glow: rgba(99, 102, 241, 0.80);
+  --anim-line: rgba(124, 58, 237, 0.42);
+  --anim-glow: rgba(99, 102, 241, 1);
   --anim-beam: rgba(99, 102, 241, 0.26);
   --anim-ribbon-opacity: 0.20;
   --anim-blend: normal;
@@ -227,8 +227,8 @@
   --anim-aurora-4: rgba(244, 114, 182, 0.24);
   --anim-grid: rgba(150, 170, 255, 0.12);
   --anim-dot: rgba(170, 185, 255, 0.88);
-  --anim-line: rgba(167, 139, 250, 0.38);
-  --anim-glow: rgba(165, 180, 252, 0.95);
+  --anim-line: rgba(180, 160, 255, 0.5);
+  --anim-glow: rgba(190, 200, 255, 1);
   --anim-beam: rgba(129, 140, 248, 0.34);
   --anim-ribbon-opacity: 0.42;
   --anim-blend: plus-lighter;
@@ -418,7 +418,7 @@
 
 /* Scroll reveal (Metronom-style) */
 .fx-progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:60;transform-origin:left;transform:scaleX(0);background:linear-gradient(90deg,var(--primary),var(--accent))}
-.fx-reveal{opacity:0;transform:translateY(60px) scale(.97);filter:blur(8px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1),filter .9s}
+.fx-reveal{opacity:0;transform:translateY(60px) scale(.97);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
 .fx-reveal .grid>*{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0ms)}
 .fx-reveal.fx-in,.fx-reveal.fx-in .grid>*{opacity:1;transform:none;filter:none}
 

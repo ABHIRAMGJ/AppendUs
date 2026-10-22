@@ -4,7 +4,7 @@ const DOTS_PER_AREA = 1 / 16000;
 const MIN_DOTS = 26;
 const MAX_DOTS = 120;
 const LINK_DIST = 132;
-const POINTER_DIST = 170;
+const POINTER_DIST = 240;
 
 type Dot = { x: number; y: number; vx: number; vy: number; r: number; phase: number };
 
@@ -97,7 +97,10 @@ export function AnimatedBackground() {
         for (const d of dots) {
           const dist = Math.hypot(d.x - pointer.x, d.y - pointer.y);
           if (dist > POINTER_DIST) continue;
-          ctx.globalAlpha = (1 - dist / POINTER_DIST) * 0.6;
+          ctx.globalAlpha = Math.min(1, (1 - dist / POINTER_DIST) * 1.3);
+          ctx.lineWidth = 1.6;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = glowColor;
           ctx.beginPath();
           ctx.moveTo(d.x, d.y);
           ctx.lineTo(pointer.x, pointer.y);
@@ -113,6 +116,8 @@ export function AnimatedBackground() {
         ctx.fill();
       }
       ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.lineWidth = 1;
     };
 
     const tick = (time: number) => {
