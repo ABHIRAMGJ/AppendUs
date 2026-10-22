@@ -137,12 +137,12 @@ function Flow() {
   const base = { role: setup.role, package: setup.pkg, experience: setup.exp, resume: setup.resume, mode: setup.mode };
 
   async function start() {
-    if (!setup.resume) return toast.error("Please upload your resume.");
-    if (!setup.role.trim()) return toast.error("Please enter your target role.");
+    if (!setup.resume) { toast.error("Please upload your resume."); return; }
+    if (!setup.role.trim()) { toast.error("Please enter your target role."); return; }
     let cam: MediaStream | null = null;
     if (setup.mode === "coding") {
       try { cam = await navigator.mediaDevices.getUserMedia({ video: true }); setStream(cam); }
-      catch { return toast.error("Camera access is required for the coding round."); }
+      catch { toast.error("Camera access is required for the coding round."); return; }
     }
     setStage("loading");
     try {
@@ -189,10 +189,10 @@ function SetupForm({ setup, setSetup, onStart }: { setup: Setup; setSetup: (s: S
   const ref = useRef<HTMLInputElement>(null);
   async function onFile(f?: File) {
     if (!f) return;
-    if (f.size > 5 * 1024 * 1024) return toast.error("File is larger than 5MB");
+    if (f.size > 5 * 1024 * 1024) { toast.error("File is larger than 5MB"); return; }
     try {
       const t = await readResume(f);
-      if (t.trim().length < 50) return toast.error("Couldn't read text from this file.");
+      if (t.trim().length < 50) { toast.error("Couldn't read text from this file."); return; }
       setSetup({ ...setup, resume: t.slice(0, 15000), fileName: f.name });
     } catch { toast.error("Couldn't read this file. Upload a text-based PDF, DOCX or TXT."); }
   }
