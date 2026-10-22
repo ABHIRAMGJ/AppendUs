@@ -212,7 +212,7 @@
   --anim-dot: rgba(79, 70, 229, 0.62);
   --anim-line: rgba(124, 58, 237, 0.30);
   --anim-glow: rgba(99, 102, 241, 0.80);
-  --anim-beam: rgba(99, 102, 241, 0.55);
+  --anim-beam: rgba(99, 102, 241, 0.26);
   --anim-ribbon-opacity: 0.20;
   --anim-blend: normal;
   --anim-veil: rgba(255, 255, 255, 0.22);
@@ -229,7 +229,7 @@
   --anim-dot: rgba(170, 185, 255, 0.88);
   --anim-line: rgba(167, 139, 250, 0.38);
   --anim-glow: rgba(165, 180, 252, 0.95);
-  --anim-beam: rgba(129, 140, 248, 0.80);
+  --anim-beam: rgba(129, 140, 248, 0.34);
   --anim-ribbon-opacity: 0.42;
   --anim-blend: plus-lighter;
   --anim-veil: rgba(8, 8, 26, 0.28);
@@ -331,23 +331,21 @@
   opacity: var(--anim-dots-opacity);
 }
 
-.anim-beam { position: absolute; will-change: transform; }
+.anim-beam { position: absolute; will-change: transform; filter: blur(30px); }
 .anim-beam-h {
-  left: -10%;
-  right: -10%;
+  left: -15%;
+  right: -15%;
   top: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--anim-beam), transparent);
-  box-shadow: 0 0 26px 8px var(--anim-beam);
+  height: 190px;
+  background: linear-gradient(180deg, transparent, var(--anim-beam) 48%, var(--anim-beam) 52%, transparent);
   animation: anim-scan-down 11s ease-in-out infinite;
 }
 .anim-beam-v {
-  top: -10%;
-  bottom: -10%;
+  top: -15%;
+  bottom: -15%;
   left: 0;
-  width: 2px;
-  background: linear-gradient(180deg, transparent, var(--anim-beam), transparent);
-  box-shadow: 0 0 26px 8px var(--anim-beam);
+  width: 190px;
+  background: linear-gradient(90deg, transparent, var(--anim-beam) 48%, var(--anim-beam) 52%, transparent);
   animation: anim-scan-right 17s ease-in-out infinite;
 }
 

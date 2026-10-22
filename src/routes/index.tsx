@@ -165,7 +165,7 @@ function Landing() {
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {journey.map((j, i) => (
             <div key={j.label} className="surface relative p-5 text-center">
-              <span className="absolute right-3 top-3 text-xs font-bold text-muted-foreground">0{i + 1}</span>
+              <span className="absolute right-3 top-3 text-xs font-bold text-primary/70">0{i + 1}</span>
               <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow">
                 <j.icon className="h-5 w-5" />
               </div>
