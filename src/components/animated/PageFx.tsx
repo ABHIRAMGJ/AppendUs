@@ -33,7 +33,7 @@ export function ScrollFx() {
             io.unobserve(e.target);
           }
         }),
-      { threshold: 0.12 },
+      { threshold: 0, rootMargin: "0px 0px -12% 0px" },
     );
     els.forEach((el, i) => {
       if (el.getBoundingClientRect().top < window.innerHeight * 0.9) return;
