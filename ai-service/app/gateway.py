@@ -113,14 +113,28 @@ async def complete_json(
         notes = base if attempt == 0 else base + [
             {"role": "user", "content": f"Return only a JSON object that matches the schema. Problem: {last_error}"}
         ]
-        payload: dict[str, Any] = {
-            "model": config.CHAT_MODEL,
-            "messages": _model_payload(system, notes),
-            "response_format": {
-                "type": "json_schema",
-                "json_schema": {"name": name, "strict": True, "schema": schema},
-            },
-        }
+        if config.AI_PROVIDER == "gemini":
+            # Gemini's compatible endpoint only promises JSON mode, not strict schemas:
+            # describe the schema in the prompt and keep the jsonschema retry loop.
+            schema_text = json.dumps(schema)
+            payload: dict[str, Any] = {
+                "model": config.CHAT_MODEL,
+                "messages": _model_payload(
+                    (system + "\n\n" if system else "")
+                    + f"Respond with a single JSON object that fits this JSON Schema:\n{schema_text}",
+                    notes,
+                ),
+                "response_format": {"type": "json_object"},
+            }
+        else:
+            payload = {
+                "model": config.CHAT_MODEL,
+                "messages": _model_payload(system, notes),
+                "response_format": {
+                    "type": "json_schema",
+                    "json_schema": {"name": name, "strict": True, "schema": schema},
+                },
+            }
         if config.REASONING_EFFORT:
             payload["reasoning_effort"] = config.REASONING_EFFORT
 

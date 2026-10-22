@@ -1,5 +1,6 @@
 # Render Blueprint: runs the Python + FastAPI AI service live.
-# Render → New → Blueprint → pick this GitHub repo. Fill LOVABLE_API_KEY when asked.
+# Render → New → Blueprint → pick this GitHub repo. The only value Render asks for is your Gemini API key
+# (aistudio.google.com → Get API key); the backend address and public key are baked in.
 services:
   - type: web
     name: appendus-ai-service
@@ -11,9 +12,9 @@ services:
     healthCheckPath: /health
     autoDeploy: true
     envVars:
-      - key: LOVABLE_API_KEY
+      - key: GEMINI_API_KEY
         sync: false
       - key: SUPABASE_URL
-        sync: false
+        value: "https://fxzdmdtqnrpgwwcladdm.supabase.co"
       - key: SUPABASE_PUBLISHABLE_KEY
-        sync: false
+        value: "sb_publishable_dlLbA5bSSbM0W0JPAF8VDg_2hHCPqXE"
