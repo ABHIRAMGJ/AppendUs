@@ -243,6 +243,19 @@ function Admin() {
           )}
         </SheetContent>
       </Sheet>
+
+      <Dialog open={editing} onOpenChange={setEditing}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit profile — {user?.email}</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1"><Label>Full name</Label><Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></div>
+            <div className="space-y-1"><Label>Education level</Label><Input value={form.education_level} onChange={(e) => setForm({ ...form, education_level: e.target.value })} /></div>
+            <div className="space-y-1"><Label>Target role</Label><Input value={form.target_role} onChange={(e) => setForm({ ...form, target_role: e.target.value })} /></div>
+            <div className="space-y-1"><Label>Skills</Label><Input value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} /></div>
+            <Button variant="hero" className="w-full" onClick={saveProfile}>Save changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
