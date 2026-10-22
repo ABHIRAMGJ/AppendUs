@@ -19,7 +19,7 @@ const KEY = "careeros-last-plan";
 function LearningPlan() {
   const { data: profile } = useProfile();
   const gen = useGenerate("plan");
-  const [f, setF] = useState({ role: "", level: "Beginner", hours: "10", weeks: "24", skills: "" });
+  const [f, setF] = useState({ role: "", level: "Beginner", hours: "10", days: "90", skills: "" });
   const [saved, setSaved] = useState("");
 
   useEffect(() => {
@@ -44,7 +44,7 @@ function LearningPlan() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5"><Label>Hours / week</Label><Input type="number" min={1} max={80} value={f.hours} onChange={(e) => setF({ ...f, hours: e.target.value })} /></div>
-            <div className="space-y-1.5"><Label>Weeks</Label><Input type="number" min={2} max={104} value={f.weeks} onChange={(e) => setF({ ...f, weeks: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>Plan length</Label><Select value={f.days} onValueChange={(v) => setF({ ...f, days: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{["30", "60", "90", "180"].map((d) => <SelectItem key={d} value={d}>{d} days</SelectItem>)}</SelectContent></Select></div>
           </div>
           <div className="space-y-1.5"><Label>Skills you already have</Label><Input value={f.skills} onChange={(e) => setF({ ...f, skills: e.target.value })} placeholder="HTML, CSS, basic Python" /></div>
           <Button type="submit" variant="hero" className="w-full" disabled={gen.loading}><Wand2 /> {gen.loading ? "Generating..." : "Generate my plan"}</Button>

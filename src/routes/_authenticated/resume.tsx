@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/resume")({
 type Result = {
   overall_score: number; summary: string; ats_compatibility: number; skills_match: number;
   content_quality: number; format_structure: number; strengths: string[]; improvements: string[];
-  matched_keywords: string[]; missing_keywords: string[]; suggestions: string[];
+  matched_keywords: string[]; missing_keywords: string[]; suggestions: string[]; improved_bullets?: { original: string; improved: string }[];
 };
 
 async function extractPdf(file: File) {
@@ -63,12 +63,14 @@ function Resume() {
     if (!f) return;
     if (f.size > 5 * 1024 * 1024) { toast.error("File is larger than 5MB"); return; }
     try {
-      const t = f.type === "application/pdf" || f.name.endsWith(".pdf") ? await extractPdf(f) : await f.text();
+      const t = f.name.toLowerCase().endsWith(".pdf") ? await extractPdf(f)
+        : f.name.toLowerCase().endsWith(".docx") ? (await (await import("mammoth")).extractRawText({ arrayBuffer: await f.arrayBuffer() })).value
+        : await f.text();
       if (t.trim().length < 50) { toast.error("Couldn't read text from this file. Try pasting your resume text instead."); return; }
       setText(t);
       setFileName(f.name);
     } catch {
-      toast.error("Couldn't read this file. Please upload a text-based PDF or TXT.");
+      toast.error("Couldn't read this file. Please upload a text-based PDF, DOCX or TXT.");
     }
   }
 
@@ -106,9 +108,9 @@ function Resume() {
             className="w-full rounded-xl border-2 border-dashed border-primary/40 bg-accent/40 p-6 text-center transition-colors hover:bg-accent">
             <Upload className="mx-auto h-8 w-8 text-primary" />
             <p className="mt-2 font-semibold">{fileName || "Upload your resume"}</p>
-            <p className="text-xs text-muted-foreground">Drag & drop or click. PDF or TXT (max 5MB)</p>
+            <p className="text-xs text-muted-foreground">Drag & drop or click. PDF, DOCX or TXT (max 5MB)</p>
           </button>
-          <input ref={inputRef} type="file" accept=".pdf,.txt,.md" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+          <input ref={inputRef} type="file" accept=".pdf,.docx,.txt,.md" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
           <div className="space-y-1.5"><Label>Or paste resume text</Label><Textarea rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste your resume..." /></div>
           <div className="space-y-1.5"><Label>Target job role (optional)</Label><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Software Engineer" /></div>
           <div className="space-y-1.5"><Label>Job description (optional)</Label><Textarea rows={3} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste a job description for a precise match" /></div>
@@ -140,6 +142,16 @@ function Resume() {
               </TabsContent>
               <TabsContent value="suggestions" className="pt-4">
                 <ol className="list-decimal space-y-2 pl-5 text-sm">{result.suggestions.map((s) => <li key={s}>{s}</li>)}</ol>
+                {!!result.improved_bullets?.length && (
+                  <div className="mt-6 space-y-3"><h4 className="font-semibold">Improved bullet points</h4>
+                    {result.improved_bullets.map((b) => (
+                      <div key={b.original} className="rounded-xl border p-3 text-sm">
+                        <p className="text-muted-foreground line-through decoration-destructive/50">{b.original}</p>
+                        <p className="mt-1 font-medium">{b.improved}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </TabsContent>
               <TabsContent value="keywords" className="space-y-4 pt-4">
                 <div><h4 className="mb-2 font-semibold">Found in your resume</h4><div className="flex flex-wrap gap-2">{result.matched_keywords.map((k) => <Badge key={k} className="bg-success/15 text-success" variant="secondary">{k}</Badge>)}</div></div>

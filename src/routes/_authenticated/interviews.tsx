@@ -23,7 +23,7 @@ function Pick({ label, value, onChange, items }: { label: string; value: string;
 }
 
 function Interviews() {
-  const [cfg, setCfg] = useState({ role: "Software Engineer", type: "Technical", difficulty: "Medium" });
+  const [cfg, setCfg] = useState({ role: "Software Engineer", type: "Technical", difficulty: "Medium", company: "" });
   const [session, setSession] = useState<number | null>(null);
 
   return (
@@ -32,7 +32,8 @@ function Interviews() {
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <div className="surface h-fit space-y-4 p-6">
           <div className="space-y-1.5"><Label>Role</Label><Input value={cfg.role} disabled={session !== null} onChange={(e) => setCfg({ ...cfg, role: e.target.value })} /></div>
-          <Pick label="Interview type" value={cfg.type} onChange={(v) => setCfg({ ...cfg, type: v })} items={["Technical", "HR", "Behavioral", "System Design", "Managerial"]} />
+          <div className="space-y-1.5"><Label>Company (optional)</Label><Input value={cfg.company} disabled={session !== null} onChange={(e) => setCfg({ ...cfg, company: e.target.value })} placeholder="e.g. Google" /></div>
+          <Pick label="Interview type" value={cfg.type} onChange={(v) => setCfg({ ...cfg, type: v })} items={["Technical", "Coding", "HR", "Behavioral", "Project Explanation", "System Design", "Communication"]} />
           <Pick label="Difficulty" value={cfg.difficulty} onChange={(v) => setCfg({ ...cfg, difficulty: v })} items={["Easy", "Medium", "Hard"]} />
           {session === null ? (
             <Button variant="hero" className="w-full" onClick={() => setSession(Date.now())}><Play /> Start Interview</Button>

@@ -13,6 +13,7 @@ const schema = z.object({
   matched_keywords: z.array(z.string()),
   missing_keywords: z.array(z.string()),
   suggestions: z.array(z.string()),
+  improved_bullets: z.array(z.object({ original: z.string(), improved: z.string() })),
 });
 
 export const Route = createFileRoute("/api/resume")({
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/api/resume")({
           const { model, runId } = gw.getProvider(request);
           const result = streamText({
             model,
-            system: `You analyse resumes strictly from evidence in the provided text. Never invent experience. Scores are 0-100 and reflect your honest assessment, not a guarantee of ATS results. Each strength/improvement should cite evidence from the resume when possible.`,
+            system: `You analyse resumes strictly from evidence in the provided text. Never invent experience. For improved_bullets, rewrite 3-6 weak bullets from the resume into ATS-friendly, quantified versions without adding facts that are not there (use placeholders like [X%] where a number is needed). Scores are 0-100 and reflect your honest assessment, not a guarantee of ATS results. Each strength/improvement should cite evidence from the resume when possible.`,
             prompt: `Target role: ${role || "not specified (infer best fit)"}\nJob description: ${jd || "not provided"}\n\nRESUME TEXT:\n${resume}`,
             output: Output.object({ schema }),
             abortSignal: request.signal,

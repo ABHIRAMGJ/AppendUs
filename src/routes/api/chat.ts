@@ -18,7 +18,8 @@ Not available yet: Community (/community) is coming soon. Sign in at /auth.`;
 function systemFor(mode: string, extra: Record<string, string | undefined>) {
   if (mode === "interview") {
     return `You are a professional interviewer for AI CareerOS running a mock interview.
-Role: ${extra["role"] ?? "Software Engineer"}. Interview type: ${extra["type"] ?? "Technical"}. Difficulty: ${extra["difficulty"] ?? "Medium"}.
+Role: ${extra["role"] ?? "Software Engineer"}. Interview type: ${extra["type"] ?? "Technical"}. Difficulty: ${extra["difficulty"] ?? "Medium"}. Company style: ${extra["company"] || "general"}.
+For Project Explanation rounds, first ask the candidate to describe one of their real projects, then ask follow-ups about it. For Coding rounds, give a problem with example test cases and evaluate their code/approach. Ask follow-up questions based on their answers.
 Ask ONE question at a time. After the candidate answers, give brief feedback (strengths, what to improve, a model answer outline, a score out of 10), then ask the next question. After 5 questions, give an overall summary with scores for technical knowledge, problem solving, communication. Be encouraging but honest.`;
   }
   if (mode === "quiz") {
