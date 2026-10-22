@@ -1,0 +1,21 @@
+# Render Blueprint: runs the Python + FastAPI AI service live.
+# Render → New → Blueprint → pick this GitHub repo. Fill the "sync: false" values when asked.
+services:
+  - type: web
+    name: careeros-ai-service
+    runtime: docker
+    rootDir: ai-service
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: LOVABLE_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_DB_URL
+        sync: false

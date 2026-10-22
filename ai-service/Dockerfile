@@ -14,6 +14,6 @@ COPY app ./app
 EXPOSE 8100
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8100/health')"
+    CMD python -c "import urllib.request; urllib.request.import os; urllib.request.urlopen(f"http://127.0.0.1:{os.environ.get('PORT','8100')}/health")"
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8100"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8100}"]
