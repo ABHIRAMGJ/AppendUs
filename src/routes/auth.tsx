@@ -4,6 +4,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { sendSignupCode, verifyCodeAndCreateAccount } from "@/lib/signup.functions";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,23 +45,39 @@ function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
+  const [form, setForm] = useState({ name: "", email: "", password: "", code: "", confirm: "" });
+  const sendCode = useServerFn(sendSignupCode);
+  const createAccount = useServerFn(verifyCodeAndCreateAccount);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  async function resendCode() {
+    if (!codeSentTo) return;
+    try {
+      await sendCode({ data: { email: codeSentTo } });
+      toast.success("A new code is on its way.");
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email: form.email,
-          password: form.password,
-          options: { emailRedirectTo: window.location.origin + "/dashboard", data: { full_name: form.name } },
-        });
+      if (mode === "signup" && !codeSentTo) {
+        await sendCode({ data: { email: form.email } });
+        setCodeSentTo(form.email);
+        toast.success("We emailed you a 6-digit code.");
+      } else if (mode === "signup" && codeSentTo) {
+        if (form.password !== form.confirm) throw new Error("Passwords don't match.");
+        await createAccount({ data: { email: codeSentTo, code: form.code, password: form.password, name: form.name } });
+        const { error } = await supabase.auth.signInWithPassword({ email: codeSentTo, password: form.password });
         if (error) throw error;
-        setSent(form.email);
+        toast.success("Email verified — welcome!");
+        navigate({ to: "/dashboard" });
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
           redirectTo: window.location.origin + "/reset-password",
@@ -144,23 +162,45 @@ function AuthPage() {
                 )}
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Email address</Label>
-                  <Input id="email" type="email" required value={form.email} onChange={set("email")} placeholder="you@example.com" />
+                  <Input id="email" type="email" required disabled={!!codeSentTo} value={form.email} onChange={set("email")} placeholder="you@example.com" />
                 </div>
-                {mode !== "forgot" && (
+                {mode === "signup" && codeSentTo && (
+                  <>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="code">6-digit code</Label>
+                        <button type="button" onClick={resendCode} className="text-xs font-medium text-primary hover:underline">Resend code</button>
+                      </div>
+                      <Input id="code" inputMode="numeric" autoComplete="one-time-code" required maxLength={6} pattern="\d{6}" value={form.code} onChange={set("code")} placeholder="123456" />
+                      <p className="text-xs text-muted-foreground">Sent to {codeSentTo}. Check spam too. <button type="button" className="text-primary hover:underline" onClick={() => setCodeSentTo(null)}>Change email</button></p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="password">Set a password</Label>
+                      <Input id="password" type="password" required minLength={8} value={form.password} onChange={set("password")} placeholder="At least 8 characters" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="confirm">Confirm password</Label>
+                      <Input id="confirm" type="password" required minLength={8} value={form.confirm} onChange={set("confirm")} placeholder="••••••••" />
+                    </div>
+                  </>
+                )}
+                {mode === "signin" && (
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password">Password</Label>
-                      {mode === "signin" && (
-                        <Link to="/auth" search={{ mode: "forgot" }} className="text-xs font-medium text-primary hover:underline">
-                          Forgot password?
-                        </Link>
-                      )}
+                      <Link to="/auth" search={{ mode: "forgot" }} className="text-xs font-medium text-primary hover:underline">
+                        Forgot password?
+                      </Link>
                     </div>
                     <Input id="password" type="password" required minLength={6} value={form.password} onChange={set("password")} placeholder="••••••••" />
                   </div>
                 )}
                 <Button type="submit" variant="hero" className="h-11 w-full" disabled={loading}>
-                  {loading ? "Please wait..." : mode === "signup" ? "Create Account" : mode === "forgot" ? "Send Reset Link" : "Login"}
+                  {loading
+                    ? "Please wait..."
+                    : mode === "signup"
+                      ? codeSentTo ? "Verify & Create Account" : "Send Code"
+                      : mode === "forgot" ? "Send Reset Link" : "Login"}
                 </Button>
               </form>
               {mode !== "forgot" && (

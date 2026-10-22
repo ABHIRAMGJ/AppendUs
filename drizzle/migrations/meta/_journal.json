@@ -43,6 +43,13 @@
       "when": 1792678259877,
       "tag": "0005_admin_full_crud",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792688546193,
+      "tag": "0006_signup_email_codes",
+      "breakpoints": true
     }
   ]
 }
