@@ -66,9 +66,10 @@ function Resume() {
       const t = f.name.toLowerCase().endsWith(".pdf") ? await extractPdf(f)
         : f.name.toLowerCase().endsWith(".docx") ? (await (await import("mammoth")).extractRawText({ arrayBuffer: await f.arrayBuffer() })).value
         : await f.text();
-      if (t.trim().length < 50) { toast.error("Couldn't read text from this file. Try pasting your resume text instead."); return; }
+      if (t.trim().length < 50) { toast.error("Couldn't read text from this file. Try a text-based PDF, DOCX or TXT."); return; }
       setText(t);
       setFileName(f.name);
+      toast.success(`Loaded ${f.name}`);
     } catch {
       toast.error("Couldn't read this file. Please upload a text-based PDF, DOCX or TXT.");
     }
@@ -100,28 +101,28 @@ function Resume() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader icon={FileText} title="AI Resume Analyzer" description="Get instant feedback and improve your resume" />
+      <PageHeader icon={FileText} title="AI Resume Analyzer" description="Upload your resume, add a target role and job description — get evidence-based feedback" />
       <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
         <div className="surface h-fit space-y-4 p-6">
           <button type="button" onClick={() => inputRef.current?.click()}
             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}
-            className="w-full rounded-xl border-2 border-dashed border-primary/40 bg-accent/40 p-6 text-center transition-colors hover:bg-accent">
+            className="w-full rounded-xl border-2 border-dashed border-primary/40 bg-accent/40 p-8 text-center transition-colors hover:bg-accent">
             <Upload className="mx-auto h-8 w-8 text-primary" />
             <p className="mt-2 font-semibold">{fileName || "Upload your resume"}</p>
             <p className="text-xs text-muted-foreground">Drag & drop or click. PDF, DOCX or TXT (max 5MB)</p>
           </button>
           <input ref={inputRef} type="file" accept=".pdf,.docx,.txt,.md" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-          <div className="space-y-1.5"><Label>Or paste resume text</Label><Textarea rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste your resume..." /></div>
-          <div className="space-y-1.5"><Label>Target job role (optional)</Label><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Software Engineer" /></div>
-          <div className="space-y-1.5"><Label>Job description (optional)</Label><Textarea rows={3} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste a job description for a precise match" /></div>
+          <div className="space-y-1.5"><Label>Target job role</Label><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Software Engineer" /></div>
+          <div className="space-y-1.5"><Label>Job description</Label><Textarea rows={6} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job description for a precise match" /></div>
           <Button variant="hero" className="w-full" disabled={loading || text.trim().length < 100} onClick={analyze}>
             {loading ? "Analyzing..." : "Analyze Resume"}
           </Button>
+          <p className="text-xs text-muted-foreground">Your resume is broken into sections and matched against the role with semantic search (RAG), so feedback cites your actual content.</p>
         </div>
 
         <div className="surface min-h-[420px] p-6">
-          {loading && <Shimmer>Reading your resume and comparing it to the role...</Shimmer>}
-          {!loading && !result && <p className="text-sm text-muted-foreground">Upload or paste your resume to see your score, strengths, gaps and keyword match. Feedback is based only on what your resume says.</p>}
+          {loading && <Shimmer>Reading your resume and matching it against the role...</Shimmer>}
+          {!loading && !result && <p className="text-sm text-muted-foreground">Upload your resume to see your score, strengths, gaps and keyword match. Feedback is based only on what your resume says.</p>}
           {result && (
             <Tabs defaultValue="analysis">
               <TabsList><TabsTrigger value="analysis">Analysis</TabsTrigger><TabsTrigger value="suggestions">Suggestions</TabsTrigger><TabsTrigger value="keywords">Keywords</TabsTrigger></TabsList>
