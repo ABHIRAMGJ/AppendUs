@@ -68,7 +68,13 @@ function AuthPage() {
         toast.success("Reset link sent — check your email.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password });
-        if (error) throw error;
+        if (error) {
+          if (/confirm/i.test(error.message)) {
+            setSent(form.email);
+            throw new Error("Please verify your email first. Check your inbox and spam folder, or resend the link.");
+          }
+          throw error;
+        }
         navigate({ to: "/dashboard" });
       }
     } catch (err) {
@@ -76,6 +82,17 @@ function AuthPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function resend() {
+    if (!sent) return;
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: sent,
+      options: { emailRedirectTo: window.location.origin + "/dashboard" },
+    });
+    if (error) toast.error(error.message);
+    else toast.success("Verification email sent again. Check your inbox and spam folder.");
   }
 
   async function google() {
@@ -107,9 +124,12 @@ function AuthPage() {
               </div>
               <h1 className="mt-6 text-2xl font-bold">Verify your email</h1>
               <p className="mt-2 text-muted-foreground">
-                We've sent a confirmation link to <span className="font-semibold text-foreground">{sent}</span>. Click it to activate your account.
+                We've sent a confirmation link to <span className="font-semibold text-foreground">{sent}</span>. Click it to activate your account. It can take a few minutes — please check your spam folder too.
               </p>
-              <Button variant="outline" className="mt-6" onClick={() => setSent(null)}>Use a different email</Button>
+              <div className="mt-6 flex flex-col gap-2">
+                <Button variant="hero" onClick={resend}>Resend verification email</Button>
+                <Button variant="outline" onClick={() => setSent(null)}>Use a different email</Button>
+              </div>
             </div>
           ) : (
             <>
