@@ -1,0 +1,23 @@
+services:
+  ai-service:
+    build: ./ai-service
+    environment:
+      LOVABLE_API_KEY: ${LOVABLE_API_KEY}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY}
+      SUPABASE_DB_URL: ${SUPABASE_DB_URL}
+      AI_CHAT_MODEL: ${AI_CHAT_MODEL:-openai/gpt-6-astra}
+      AI_EMBED_MODEL: ${AI_EMBED_MODEL:-google/gemini-embedding-2}
+    ports:
+      - "8100:8100"
+    restart: unless-stopped
+
+  web:
+    build: .
+    environment:
+      AI_SERVICE_URL: http://ai-service:8100
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ai-service
+    restart: unless-stopped

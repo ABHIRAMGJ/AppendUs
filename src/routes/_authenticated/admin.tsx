@@ -27,7 +27,7 @@ function useAll() {
   return useQuery({
     queryKey: ["admin-all"],
     queryFn: async () => {
-      const [profiles, jobs, projects, analyses, threads, attempts, submissions, sessions, roles, flags, actions] = await Promise.all([
+      const [profiles, jobs, projects, analyses, threads, attempts, submissions, sessions, roles, flags, actions, ai] = await Promise.all([
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         supabase.from("job_applications").select("*"),
         supabase.from("projects").select("*"),
@@ -39,6 +39,7 @@ function useAll() {
         supabase.from("user_roles").select("id,user_id,role"),
         supabase.from("feature_flags").select("*").order("key"),
         supabase.from("admin_actions").select("*").order("created_at", { ascending: false }).limit(50),
+        fetch("/api/ai-health").then((r) => r.json()).catch(() => ({ ok: false, detail: "AI service offline" })),
       ]);
       const err = profiles.error || jobs.error || projects.error || analyses.error || threads.error
         || attempts.error || submissions.error || sessions.error || roles.error || flags.error || actions.error;
@@ -46,7 +47,7 @@ function useAll() {
       return {
         profiles: profiles.data, jobs: jobs.data, projects: projects.data, analyses: analyses.data,
         threads: threads.data, attempts: attempts.data, submissions: submissions.data, sessions: sessions.data,
-        roles: roles.data, flags: flags.data, actions: actions.data,
+        roles: roles.data, flags: flags.data, actions: actions.data, ai,
       };
     },
   });
@@ -120,11 +121,19 @@ function Admin() {
     ["Assessments", data?.attempts.length], ["Code submissions", data?.submissions.length], ["Interviews", data?.sessions.length],
   ] as const;
 
-  const health = [
-    ["Users & profiles", data?.profiles], ["Job applications", data?.jobs], ["Projects", data?.projects],
-    ["Resume analyses", data?.analyses], ["Mentor threads", data?.threads], ["Assessment attempts", data?.attempts],
-    ["Code submissions", data?.submissions], ["Interview sessions", data?.sessions], ["Feature flags", data?.flags], ["Audit log", data?.actions],
-  ] as const;
+  const health: Array<[string, boolean, string]> = [
+    ["Users & profiles", !!data?.profiles, `${data?.profiles.length ?? 0} rows`],
+    ["Job applications", !!data?.jobs, `${data?.jobs.length ?? 0} rows`],
+    ["Projects", !!data?.projects, `${data?.projects.length ?? 0} rows`],
+    ["Resume analyses", !!data?.analyses, `${data?.analyses.length ?? 0} rows`],
+    ["Mentor threads", !!data?.threads, `${data?.threads.length ?? 0} rows`],
+    ["Assessment attempts", !!data?.attempts, `${data?.attempts.length ?? 0} rows`],
+    ["Code submissions", !!data?.submissions, `${data?.submissions.length ?? 0} rows`],
+    ["Interview sessions", !!data?.sessions, `${data?.sessions.length ?? 0} rows`],
+    ["Feature flags", !!data?.flags, `${data?.flags.length ?? 0} rows`],
+    ["Audit log", !!data?.actions, `${data?.actions.length ?? 0} rows`],
+    ["AI service (Python + FastAPI)", !!data?.ai?.ok, data?.ai?.detail ?? "not checked"],
+  ];
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -203,11 +212,11 @@ function Admin() {
 
         <TabsContent value="health" className="pt-4">
           <div className="surface divide-y">
-            {health.map(([label, arr]) => (
+            {health.map(([label, ok, detail]) => (
               <div key={label} className="flex items-center justify-between gap-4 p-4 text-sm">
                 <p className="flex items-center gap-2"><Activity className="h-4 w-4 text-muted-foreground" /> {label}</p>
-                <Badge variant="secondary" className={arr ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}>
-                  {arr ? `OK · ${arr.length} rows` : "Unreachable"}
+                <Badge variant="secondary" className={ok ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive"}>
+                  {ok ? `OK · ${detail}` : `Unreachable · ${detail}`}
                 </Badge>
               </div>
             ))}

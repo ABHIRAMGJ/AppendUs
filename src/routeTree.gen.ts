@@ -27,6 +27,7 @@ import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedResumeRouteImport } from './routes/_authenticated/resume'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as ApiAiHealthRouteImport } from './routes/api/ai-health'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 import { Route as ApiInterviewRouteImport } from './routes/api/interview'
@@ -129,6 +130,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiAiHealthRoute = ApiAiHealthRouteImport.update({
+  id: '/api/ai-health',
+  path: '/api/ai-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -195,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/projects': typeof AuthenticatedProjectsRoute
   '/resume': typeof AuthenticatedResumeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/ai-health': typeof ApiAiHealthRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/interview': typeof ApiInterviewRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/projects': typeof AuthenticatedProjectsRoute
   '/resume': typeof AuthenticatedResumeRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/api/ai-health': typeof ApiAiHealthRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/interview': typeof ApiInterviewRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
   '/_authenticated/resume': typeof AuthenticatedResumeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/api/ai-health': typeof ApiAiHealthRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
   '/api/interview': typeof ApiInterviewRoute
@@ -282,6 +291,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/resume'
     | '/settings'
+    | '/api/ai-health'
     | '/api/chat'
     | '/api/generate'
     | '/api/interview'
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/resume'
     | '/settings'
+    | '/api/ai-health'
     | '/api/chat'
     | '/api/generate'
     | '/api/interview'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects'
     | '/_authenticated/resume'
     | '/_authenticated/settings'
+    | '/api/ai-health'
     | '/api/chat'
     | '/api/generate'
     | '/api/interview'
@@ -354,6 +366,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiAiHealthRoute: typeof ApiAiHealthRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGenerateRoute: typeof ApiGenerateRoute
   ApiInterviewRoute: typeof ApiInterviewRoute
@@ -491,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/ai-health': {
+      id: '/api/ai-health'
+      path: '/api/ai-health'
+      fullPath: '/api/ai-health'
+      preLoaderRoute: typeof ApiAiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -612,6 +632,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiAiHealthRoute: ApiAiHealthRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGenerateRoute: ApiGenerateRoute,
   ApiInterviewRoute: ApiInterviewRoute,
