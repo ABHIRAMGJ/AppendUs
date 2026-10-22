@@ -21,7 +21,6 @@ type Result = {
   overall_score: number; summary: string; ats_compatibility: number; skills_match: number;
   content_quality: number; format_structure: number; strengths: string[]; improvements: string[];
   matched_keywords: string[]; missing_keywords: string[]; suggestions: string[]; improved_bullets?: { original: string; improved: string }[];
-  requirements?: { requirement: string; status: "met" | "partial" | "missing"; evidence_ids: string[]; explanation: string }[];
 };
 
 async function extractPdf(file: File) {
@@ -58,7 +57,6 @@ function Resume() {
   const [jd, setJd] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
-  const [chunks, setChunks] = useState<Record<string, string>>({});
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function onFile(f?: File) {
@@ -68,7 +66,7 @@ function Resume() {
       const t = f.name.toLowerCase().endsWith(".pdf") ? await extractPdf(f)
         : f.name.toLowerCase().endsWith(".docx") ? (await (await import("mammoth")).extractRawText({ arrayBuffer: await f.arrayBuffer() })).value
         : await f.text();
-      if (t.trim().length < 50) { toast.error("Couldn't read text from this file. It may be a scanned image — please upload a text-based PDF or DOCX."); return; }
+      if (t.trim().length < 50) { toast.error("Couldn't read text from this file. Try pasting your resume text instead."); return; }
       setText(t);
       setFileName(f.name);
     } catch {
@@ -88,7 +86,6 @@ function Resume() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Analysis failed");
       setResult(data.result);
-      setChunks(Object.fromEntries((data.chunks ?? []).map((c: { id: string; text: string }) => [c.id, c.text])));
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -114,37 +111,20 @@ function Resume() {
             <p className="text-xs text-muted-foreground">Drag & drop or click. PDF, DOCX or TXT (max 5MB)</p>
           </button>
           <input ref={inputRef} type="file" accept=".pdf,.docx,.txt,.md" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-          <div className="space-y-1.5"><Label>Target job role</Label><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Software Engineer" /></div>
-          <div className="space-y-1.5"><Label>Job description <span className="text-muted-foreground">(recommended)</span></Label><Textarea rows={7} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the job description — each requirement is matched against evidence in your resume" /></div>
-          <Button variant="hero" className="w-full" disabled={loading || !text || !role.trim()} onClick={analyze}>
+          <div className="space-y-1.5"><Label>Or paste resume text</Label><Textarea rows={5} value={text} onChange={(e) => setText(e.target.value)} placeholder="Paste your resume..." /></div>
+          <div className="space-y-1.5"><Label>Target job role (optional)</Label><Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Software Engineer" /></div>
+          <div className="space-y-1.5"><Label>Job description (optional)</Label><Textarea rows={3} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste a job description for a precise match" /></div>
+          <Button variant="hero" className="w-full" disabled={loading || text.trim().length < 100} onClick={analyze}>
             {loading ? "Analyzing..." : "Analyze Resume"}
           </Button>
-          {(!text || !role.trim()) && <p className="text-center text-xs text-muted-foreground">Upload your resume and enter a target role to start.</p>}
         </div>
 
         <div className="surface min-h-[420px] p-6">
-          {loading && <Shimmer>Finding evidence in your resume for each job requirement...</Shimmer>}
-          {!loading && !result && <p className="text-sm text-muted-foreground">Upload your resume and enter a target role to see your score, a requirement-by-requirement match with evidence from your resume, gaps and keywords.</p>}
+          {loading && <Shimmer>Reading your resume and comparing it to the role...</Shimmer>}
+          {!loading && !result && <p className="text-sm text-muted-foreground">Upload or paste your resume to see your score, strengths, gaps and keyword match. Feedback is based only on what your resume says.</p>}
           {result && (
             <Tabs defaultValue="analysis">
-              <TabsList><TabsTrigger value="analysis">Analysis</TabsTrigger><TabsTrigger value="match">JD Match</TabsTrigger><TabsTrigger value="suggestions">Suggestions</TabsTrigger><TabsTrigger value="keywords">Keywords</TabsTrigger></TabsList>
-              <TabsContent value="match" className="space-y-3 pt-4">
-                <p className="text-xs text-muted-foreground">Each requirement is matched to the most relevant parts of your resume. Evidence below is quoted directly from your resume.</p>
-                {result.requirements?.map((r) => (
-                  <div key={r.requirement} className="rounded-xl border p-4 text-sm">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="font-medium">{r.requirement}</p>
-                      <Badge variant="secondary" className={r.status === "met" ? "bg-success/15 text-success" : r.status === "partial" ? "bg-warning/15 text-warning" : "bg-destructive/15 text-destructive"}>
-                        {r.status === "met" ? "Met" : r.status === "partial" ? "Partial" : "Missing"}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-muted-foreground">{r.explanation}</p>
-                    {r.evidence_ids.map((id) => chunks[id] && (
-                      <blockquote key={id} className="mt-2 border-l-2 border-primary/50 pl-3 text-xs italic text-muted-foreground">“{chunks[id]}”</blockquote>
-                    ))}
-                  </div>
-                ))}
-              </TabsContent>
+              <TabsList><TabsTrigger value="analysis">Analysis</TabsTrigger><TabsTrigger value="suggestions">Suggestions</TabsTrigger><TabsTrigger value="keywords">Keywords</TabsTrigger></TabsList>
               <TabsContent value="analysis" className="space-y-6 pt-4">
                 <div className="flex flex-col items-center gap-6 sm:flex-row">
                   <ScoreRing v={result.overall_score} />
