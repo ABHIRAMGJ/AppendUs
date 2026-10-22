@@ -76,8 +76,10 @@ export function AnimatedBackground() {
       ctx.strokeStyle = lineColor;
       for (let i = 0; i < dots.length; i++) {
         const a = dots[i];
+        if (!a) continue;
         for (let j = i + 1; j < dots.length; j++) {
           const b = dots[j];
+          if (!b) continue;
           const dx = a.x - b.x;
           const dy = a.y - b.y;
           const distSq = dx * dx + dy * dy;
