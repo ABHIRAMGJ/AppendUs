@@ -68,30 +68,49 @@ async def _request(
 
 
 async def select_one(
-    token: str, table: str, filters: dict[str, Any], columns: str = "*"
+    token: str,
+    table: str,
+    filters: dict[str, Any],
+    columns: str = "*",
+    transport: httpx.AsyncBaseTransport | None = None,
 ) -> dict[str, Any] | None:
     params = {**_filters(filters), "select": columns, "limit": "1"}
-    res = await _request("GET", table, token, params=params)
+    res = await _request("GET", table, token, params=params, transport=transport)
     rows = res.json()
     return rows[0] if isinstance(rows, list) and rows else None
 
 
 async def insert(
-    token: str, table: str, rows: list[dict[str, Any]], *, returning: bool = False
+    token: str,
+    table: str,
+    rows: list[dict[str, Any]],
+    *,
+    returning: bool = False,
+    transport: httpx.AsyncBaseTransport | None = None,
 ) -> list[dict[str, Any]]:
     prefer = "return=representation" if returning else "return=minimal"
-    res = await _request("POST", table, token, body=rows, prefer=prefer)
+    res = await _request("POST", table, token, body=rows, prefer=prefer, transport=transport)
     return res.json() if returning else []
 
 
-async def update(token: str, table: str, filters: dict[str, Any], values: dict[str, Any]) -> None:
-    await _request("PATCH", table, token, params=_filters(filters), body=values, prefer="return=minimal")
+async def update(
+    token: str,
+    table: str,
+    filters: dict[str, Any],
+    values: dict[str, Any],
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> None:
+    await _request("PATCH", table, token, params=_filters(filters), body=values, prefer="return=minimal", transport=transport)
 
 
-async def delete(token: str, table: str, filters: dict[str, Any]) -> None:
-    await _request("DELETE", table, token, params=_filters(filters), prefer="return=minimal")
+async def delete(
+    token: str, table: str, filters: dict[str, Any], transport: httpx.AsyncBaseTransport | None = None
+) -> None:
+    await _request("DELETE", table, token, params=_filters(filters), prefer="return=minimal", transport=transport)
 
 
-async def rpc(token: str, fn: str, params: dict[str, Any]) -> Any:
-    res = await _request("POST", f"rpc/{fn}", token, body=params)
+async def rpc(
+    token: str, fn: str, params: dict[str, Any], transport: httpx.AsyncBaseTransport | None = None
+) -> Any:
+    res = await _request("POST", f"rpc/{fn}", token, body=params, transport=transport)
     return res.json()
