@@ -16,7 +16,8 @@ function Thread() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["mentor-messages", threadId],
     queryFn: () => loadMessages(threadId),
-    staleTime: Infinity,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
   });
   const onChange = useCallback(() => {
     qc.invalidateQueries({ queryKey: ["mentor-threads"] });

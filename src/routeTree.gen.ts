@@ -22,6 +22,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedInterviewsRouteImport } from './routes/_authenticated/interviews'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedLearningPlanRouteImport } from './routes/_authenticated/learning-plan'
+import { Route as AuthenticatedMentorRouteImport } from './routes/_authenticated/mentor'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedResumeRouteImport } from './routes/_authenticated/resume'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -29,6 +30,8 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
 import { Route as ApiMentorRouteImport } from './routes/api/mentor'
 import { Route as ApiResumeRouteImport } from './routes/api/resume'
+import { Route as AuthenticatedMentorIndexRouteImport } from './routes/_authenticated/mentor.index'
+import { Route as AuthenticatedMentorThreadIdRouteImport } from './routes/_authenticated/mentor.$threadId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -97,6 +100,11 @@ const AuthenticatedLearningPlanRoute =
     path: '/learning-plan',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMentorRoute = AuthenticatedMentorRouteImport.update({
+  id: '/mentor',
+  path: '/mentor',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
@@ -132,6 +140,18 @@ const ApiResumeRoute = ApiResumeRouteImport.update({
   path: '/api/resume',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedMentorIndexRoute =
+  AuthenticatedMentorIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedMentorRoute,
+  } as any)
+const AuthenticatedMentorThreadIdRoute =
+  AuthenticatedMentorThreadIdRouteImport.update({
+    id: '/$threadId',
+    path: '/$threadId',
+    getParentRoute: () => AuthenticatedMentorRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -146,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/interviews': typeof AuthenticatedInterviewsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/learning-plan': typeof AuthenticatedLearningPlanRoute
+  '/mentor': typeof AuthenticatedMentorRouteWithChildren
   '/projects': typeof AuthenticatedProjectsRoute
   '/resume': typeof AuthenticatedResumeRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -153,6 +174,8 @@ export interface FileRoutesByFullPath {
   '/api/generate': typeof ApiGenerateRoute
   '/api/mentor': typeof ApiMentorRoute
   '/api/resume': typeof ApiResumeRoute
+  '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
+  '/mentor/': typeof AuthenticatedMentorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -174,6 +197,8 @@ export interface FileRoutesByTo {
   '/api/generate': typeof ApiGenerateRoute
   '/api/mentor': typeof ApiMentorRoute
   '/api/resume': typeof ApiResumeRoute
+  '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
+  '/mentor': typeof AuthenticatedMentorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -190,6 +215,7 @@ export interface FileRoutesById {
   '/_authenticated/interviews': typeof AuthenticatedInterviewsRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/learning-plan': typeof AuthenticatedLearningPlanRoute
+  '/_authenticated/mentor': typeof AuthenticatedMentorRouteWithChildren
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
   '/_authenticated/resume': typeof AuthenticatedResumeRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -197,6 +223,8 @@ export interface FileRoutesById {
   '/api/generate': typeof ApiGenerateRoute
   '/api/mentor': typeof ApiMentorRoute
   '/api/resume': typeof ApiResumeRoute
+  '/_authenticated/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
+  '/_authenticated/mentor/': typeof AuthenticatedMentorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -213,6 +241,7 @@ export interface FileRouteTypes {
     | '/interviews'
     | '/jobs'
     | '/learning-plan'
+    | '/mentor'
     | '/projects'
     | '/resume'
     | '/settings'
@@ -220,6 +249,8 @@ export interface FileRouteTypes {
     | '/api/generate'
     | '/api/mentor'
     | '/api/resume'
+    | '/mentor/$threadId'
+    | '/mentor/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -241,6 +272,8 @@ export interface FileRouteTypes {
     | '/api/generate'
     | '/api/mentor'
     | '/api/resume'
+    | '/mentor/$threadId'
+    | '/mentor'
   id:
     | '__root__'
     | '/'
@@ -256,6 +289,7 @@ export interface FileRouteTypes {
     | '/_authenticated/interviews'
     | '/_authenticated/jobs'
     | '/_authenticated/learning-plan'
+    | '/_authenticated/mentor'
     | '/_authenticated/projects'
     | '/_authenticated/resume'
     | '/_authenticated/settings'
@@ -263,6 +297,8 @@ export interface FileRouteTypes {
     | '/api/generate'
     | '/api/mentor'
     | '/api/resume'
+    | '/_authenticated/mentor/$threadId'
+    | '/_authenticated/mentor/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -369,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLearningPlanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/mentor': {
+      id: '/_authenticated/mentor'
+      path: '/mentor'
+      fullPath: '/mentor'
+      preLoaderRoute: typeof AuthenticatedMentorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/projects': {
       id: '/_authenticated/projects'
       path: '/projects'
@@ -418,8 +461,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiResumeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/mentor/': {
+      id: '/_authenticated/mentor/'
+      path: '/'
+      fullPath: '/mentor/'
+      preLoaderRoute: typeof AuthenticatedMentorIndexRouteImport
+      parentRoute: typeof AuthenticatedMentorRoute
+    }
+    '/_authenticated/mentor/$threadId': {
+      id: '/_authenticated/mentor/$threadId'
+      path: '/$threadId'
+      fullPath: '/mentor/$threadId'
+      preLoaderRoute: typeof AuthenticatedMentorThreadIdRouteImport
+      parentRoute: typeof AuthenticatedMentorRoute
+    }
   }
 }
+
+interface AuthenticatedMentorRouteChildren {
+  AuthenticatedMentorThreadIdRoute: typeof AuthenticatedMentorThreadIdRoute
+  AuthenticatedMentorIndexRoute: typeof AuthenticatedMentorIndexRoute
+}
+
+const AuthenticatedMentorRouteChildren: AuthenticatedMentorRouteChildren = {
+  AuthenticatedMentorThreadIdRoute: AuthenticatedMentorThreadIdRoute,
+  AuthenticatedMentorIndexRoute: AuthenticatedMentorIndexRoute,
+}
+
+const AuthenticatedMentorRouteWithChildren =
+  AuthenticatedMentorRoute._addFileChildren(AuthenticatedMentorRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssessmentsRoute: typeof AuthenticatedAssessmentsRoute
@@ -431,6 +501,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedInterviewsRoute: typeof AuthenticatedInterviewsRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedLearningPlanRoute: typeof AuthenticatedLearningPlanRoute
+  AuthenticatedMentorRoute: typeof AuthenticatedMentorRouteWithChildren
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
   AuthenticatedResumeRoute: typeof AuthenticatedResumeRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -446,6 +517,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedInterviewsRoute: AuthenticatedInterviewsRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedLearningPlanRoute: AuthenticatedLearningPlanRoute,
+  AuthenticatedMentorRoute: AuthenticatedMentorRouteWithChildren,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
   AuthenticatedResumeRoute: AuthenticatedResumeRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
