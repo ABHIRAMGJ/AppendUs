@@ -13,20 +13,11 @@ def install(monkeypatch, reply="Hello from Python"):
             yield piece
 
     monkeypatch.setattr(gateway, "stream_text", fake_stream)
-    monkeypatch.setattr(auth, "user_from_token", lambda token: _awaited({"user_id": "u-1", "email": "a@b.c"}))
-    monkeypatch.setattr(db, "fetch_one", lambda *a, **k: _awaited({"id": "row-1"}))
-    monkeypatch.setattr(db, "fetch", lambda *a, **k: _awaited([]))
-    monkeypatch.setattr(db, "execute", lambda *a, **k: _awaited(1))
-    monkeypatch.setattr(db, "execute_many", lambda *a, **k: _awaited(1))
-
-
-def _awaited(value):
-    import asyncio
-
-    async def go():
-        return value
-
-    return asyncio.get_event_loop_policy().new_event_loop() if False else _coro(value)
+    monkeypatch.setattr(auth, "user_from_token", lambda token: _coro({"user_id": "u-1", "email": "a@b.c"}))
+    monkeypatch.setattr(db, "fetch_one", lambda *a, **k: _coro({"id": "row-1"}))
+    monkeypatch.setattr(db, "fetch", lambda *a, **k: _coro([]))
+    monkeypatch.setattr(db, "execute", lambda *a, **k: _coro(1))
+    monkeypatch.setattr(db, "execute_many", lambda *a, **k: _coro(1))
 
 
 def _coro(value):
