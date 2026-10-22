@@ -43,7 +43,7 @@ def test_gemini_provider_when_no_gateway_key(monkeypatch):
         assert reloaded.EMBED_MODEL == "gemini-embedding-001"
         assert reloaded.REASONING_EFFORT == ""
     finally:
-        monkeypatch.delenv("GEMINI_API_KEY")
+        monkeypatch.undo()
         importlib.reload(config)
 
 
@@ -56,7 +56,7 @@ def test_gateway_provider_prefers_lovable_key(monkeypatch):
         assert reloaded.GATEWAY_KEY == "lovable-key"
         assert reloaded.CHAT_MODEL == config._get("AI_CHAT_MODEL", "openai/gpt-6-astra")
     finally:
-        monkeypatch.delenv("GEMINI_API_KEY")
+        monkeypatch.undo()
         importlib.reload(config)
 
 
@@ -68,4 +68,5 @@ def test_none_provider_when_no_keys(monkeypatch):
         assert reloaded.AI_PROVIDER == "none"
         assert reloaded.GATEWAY_KEY == ""
     finally:
+        monkeypatch.undo()
         importlib.reload(config)
