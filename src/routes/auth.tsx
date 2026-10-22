@@ -124,9 +124,12 @@ function AuthPage() {
               </div>
               <h1 className="mt-6 text-2xl font-bold">Verify your email</h1>
               <p className="mt-2 text-muted-foreground">
-                We've sent a confirmation link to <span className="font-semibold text-foreground">{sent}</span>. Click it to activate your account.
+                We've sent a confirmation link to <span className="font-semibold text-foreground">{sent}</span>. Click it to activate your account. It can take a few minutes — please check your spam folder too.
               </p>
-              <Button variant="outline" className="mt-6" onClick={() => setSent(null)}>Use a different email</Button>
+              <div className="mt-6 flex flex-col gap-2">
+                <Button variant="hero" onClick={resend}>Resend verification email</Button>
+                <Button variant="outline" onClick={() => setSent(null)}>Use a different email</Button>
+              </div>
             </div>
           ) : (
             <>
