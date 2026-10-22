@@ -29,6 +29,7 @@ import { Route as AuthenticatedResumeRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGenerateRouteImport } from './routes/api/generate'
+import { Route as ApiInterviewRouteImport } from './routes/api/interview'
 import { Route as ApiMentorRouteImport } from './routes/api/mentor'
 import { Route as ApiQuizRouteImport } from './routes/api/quiz'
 import { Route as ApiResumeRouteImport } from './routes/api/resume'
@@ -138,6 +139,11 @@ const ApiGenerateRoute = ApiGenerateRouteImport.update({
   path: '/api/generate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInterviewRoute = ApiInterviewRouteImport.update({
+  id: '/api/interview',
+  path: '/api/interview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMentorRoute = ApiMentorRouteImport.update({
   id: '/api/mentor',
   path: '/api/mentor',
@@ -191,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
+  '/api/interview': typeof ApiInterviewRoute
   '/api/mentor': typeof ApiMentorRoute
   '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
+  '/api/interview': typeof ApiInterviewRoute
   '/api/mentor': typeof ApiMentorRoute
   '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/chat': typeof ApiChatRoute
   '/api/generate': typeof ApiGenerateRoute
+  '/api/interview': typeof ApiInterviewRoute
   '/api/mentor': typeof ApiMentorRoute
   '/api/quiz': typeof ApiQuizRoute
   '/api/resume': typeof ApiResumeRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/chat'
     | '/api/generate'
+    | '/api/interview'
     | '/api/mentor'
     | '/api/quiz'
     | '/api/resume'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/chat'
     | '/api/generate'
+    | '/api/interview'
     | '/api/mentor'
     | '/api/quiz'
     | '/api/resume'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/api/chat'
     | '/api/generate'
+    | '/api/interview'
     | '/api/mentor'
     | '/api/quiz'
     | '/api/resume'
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGenerateRoute: typeof ApiGenerateRoute
+  ApiInterviewRoute: typeof ApiInterviewRoute
   ApiMentorRoute: typeof ApiMentorRoute
   ApiQuizRoute: typeof ApiQuizRoute
   ApiResumeRoute: typeof ApiResumeRoute
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/interview': {
+      id: '/api/interview'
+      path: '/api/interview'
+      fullPath: '/api/interview'
+      preLoaderRoute: typeof ApiInterviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/mentor': {
       id: '/api/mentor'
       path: '/api/mentor'
@@ -594,6 +614,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGenerateRoute: ApiGenerateRoute,
+  ApiInterviewRoute: ApiInterviewRoute,
   ApiMentorRoute: ApiMentorRoute,
   ApiQuizRoute: ApiQuizRoute,
   ApiResumeRoute: ApiResumeRoute,
