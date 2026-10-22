@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const TASKS: Record<string, (i: Record<string, string>) => string> = {
+type In = Partial<Record<"role" | "level" | "hours" | "weeks" | "skills" | "company" | "language" | "problem" | "code", string>>;
+const TASKS: Record<string, (i: In) => string> = {
   plan: (i) => `Create a personalised learning plan.
 Goal role: ${i.role}. Current level: ${i.level}. Hours per week: ${i.hours}. Duration: ${i.weeks} weeks. Existing skills: ${i.skills || "none listed"}.
 Format in markdown: a short overview, then phases (### Phase N — title (Weeks x–y)) each with topics, a hands-on project, and free resource types (no fake URLs). Then a "This week" day-by-day plan (Mon–Sun) fitting the hours. End with milestones to prove skills.`,
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/api/generate")({
           const result = streamText({
             model,
             system: "You are CareerOS, an honest, practical career and learning expert. Never fabricate sources, links, job listings or statistics.",
-            prompt: make(input),
+            prompt: make(input as In),
             abortSignal: request.signal,
             providerOptions: gw.reasoningOptions,
           });
