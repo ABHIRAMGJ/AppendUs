@@ -128,6 +128,48 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_sessions: {
+        Row: {
+          answers: Json
+          created_at: string
+          experience: string | null
+          id: string
+          mode: string
+          package: string | null
+          proctor: Json | null
+          questions: Json
+          result: Json | null
+          target_role: string | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          experience?: string | null
+          id?: string
+          mode: string
+          package?: string | null
+          proctor?: Json | null
+          questions?: Json
+          result?: Json | null
+          target_role?: string | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          experience?: string | null
+          id?: string
+          mode?: string
+          package?: string | null
+          proctor?: Json | null
+          questions?: Json
+          result?: Json | null
+          target_role?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       job_applications: {
         Row: {
           applied_on: string | null
