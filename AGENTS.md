@@ -17,5 +17,6 @@
 - Colors only via semantic tokens in src/styles.css with light and .dark values — every page must work in both themes.
 - Every account (email or Google) must verify its email once with our own 6-digit Resend code (src/lib/signup.functions.ts); EmailGate in AppShell blocks the app until a row exists in email_verified, which only server code writes — Google alone does not count as verified.
 - The Python AI service deploys to Render via render.yaml (Docker, listens on $PORT); the app reaches it through the AI_SERVICE_URL secret.
+- Render explicitly selects Gemini via AI_PROVIDER; UI chat streams encode provider failures as safe error events because HTTP exception handlers cannot run after streaming starts.
 - The Python service never connects to Postgres directly (Lovable Cloud gives no DB password); all data access goes through Supabase REST with the caller's own bearer token, so RLS decides visibility. Vector search uses the public.match_resume_chunks RPC (auth.uid()-scoped, SECURITY INVOKER).
 

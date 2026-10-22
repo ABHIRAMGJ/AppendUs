@@ -9,6 +9,9 @@ import httpx
 from . import config
 
 _FRIENDLY = {
+    400: "The AI provider rejected the request settings. Please check the configured model and provider.",
+    401: "The AI provider could not authenticate. Please check the API key in the hosting settings.",
+    404: "The configured AI model or endpoint is unavailable. Please check the hosting settings.",
     429: "Too many requests right now. Please wait a moment and try again.",
     402: "AI credits are used up. Add credits in Settings → Plans & credits.",
     403: "AI access is blocked for this workspace.",
@@ -50,6 +53,8 @@ async def close_client() -> None:
 
 def _headers() -> dict[str, str]:
     if not config.GATEWAY_KEY:
+        if config.AI_PROVIDER == "gemini":
+            raise GatewayError("Gemini is not configured. Add GEMINI_API_KEY in Render's Environment settings.", 503)
         raise GatewayError("AI is not configured", 401)
     return {
         "Authorization": f"Bearer {config.GATEWAY_KEY}",

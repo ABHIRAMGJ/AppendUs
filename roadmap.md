@@ -9,5 +9,5 @@
 - Code sync with GitHub confirmed live — repository holds every commit plus a sync-added README.
 
 ## Blocked on the user
-- Get a free Gemini API key at aistudio.google.com → Get API key, then create the Render blueprint: Render → New → Blueprint → this repo → paste the Gemini key, the backend URL and the publishable key when asked.
-- Send the Render URL of the AI service so AI_SERVICE_URL can point the app at it (the preview in this sandbox still runs a local copy of the service).
+- Sync the updated Render blueprint and redeploy: the live service has database settings but AI requests are rejected; explicit Gemini selection and safe stream errors are ready for deployment.
+- Verify a real AI answer on https://appendus-ai-service.onrender.com, then configure AI_SERVICE_URL and publish the app connection.
