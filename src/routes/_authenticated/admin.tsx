@@ -57,6 +57,8 @@ function Admin() {
   const { data, isLoading, error } = useAll();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ full_name: "", education_level: "", target_role: "", skills: "" });
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-all"] });
 
   const users = useMemo(() => (data?.profiles ?? []).filter((p) =>
