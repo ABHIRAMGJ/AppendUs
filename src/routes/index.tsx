@@ -1,3 +1,4 @@
+import { HeroFx } from "@/components/animated/HeroFx";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight, Compass, FileText, Mic, BookOpen, Code2, Briefcase, GraduationCap, ShieldCheck,
@@ -120,6 +121,7 @@ function Landing() {
       </header>
 
       <section className="relative overflow-hidden bg-gradient-hero">
+        <HeroFx />
         <div className="pointer-events-none absolute inset-0 grid-bg opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
         <div className="relative mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 lg:py-28">
           <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-semibold text-accent-foreground shadow-card">
