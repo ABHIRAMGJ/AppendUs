@@ -27,7 +27,7 @@ function useAll() {
   return useQuery({
     queryKey: ["admin-all"],
     queryFn: async () => {
-      const [profiles, jobs, projects, analyses, threads, attempts, submissions, roles, flags, actions] = await Promise.all([
+      const [profiles, jobs, projects, analyses, threads, attempts, submissions, sessions, roles, flags, actions] = await Promise.all([
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         supabase.from("job_applications").select("*"),
         supabase.from("projects").select("*"),
@@ -35,16 +35,17 @@ function useAll() {
         supabase.from("mentor_threads").select("id,user_id,title,updated_at"),
         supabase.from("assessment_attempts").select("id,user_id,topic,level,score,total,created_at"),
         supabase.from("code_submissions").select("id,user_id,problem,language,created_at"),
+        supabase.from("interview_sessions").select("id,user_id,mode,target_role,experience,result,created_at"),
         supabase.from("user_roles").select("id,user_id,role"),
         supabase.from("feature_flags").select("*").order("key"),
         supabase.from("admin_actions").select("*").order("created_at", { ascending: false }).limit(50),
       ]);
       const err = profiles.error || jobs.error || projects.error || analyses.error || threads.error
-        || attempts.error || submissions.error || roles.error || flags.error || actions.error;
+        || attempts.error || submissions.error || sessions.error || roles.error || flags.error || actions.error;
       if (err) throw err;
       return {
         profiles: profiles.data, jobs: jobs.data, projects: projects.data, analyses: analyses.data,
-        threads: threads.data, attempts: attempts.data, submissions: submissions.data,
+        threads: threads.data, attempts: attempts.data, submissions: submissions.data, sessions: sessions.data,
         roles: roles.data, flags: flags.data, actions: actions.data,
       };
     },
