@@ -68,7 +68,13 @@ function AuthPage() {
         toast.success("Reset link sent — check your email.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password });
-        if (error) throw error;
+        if (error) {
+          if (/confirm/i.test(error.message)) {
+            setSent(form.email);
+            throw new Error("Please verify your email first. Check your inbox and spam folder, or resend the link.");
+          }
+          throw error;
+        }
         navigate({ to: "/dashboard" });
       }
     } catch (err) {
@@ -76,6 +82,17 @@ function AuthPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function resend() {
+    if (!sent) return;
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: sent,
+      options: { emailRedirectTo: window.location.origin + "/dashboard" },
+    });
+    if (error) toast.error(error.message);
+    else toast.success("Verification email sent again. Check your inbox and spam folder.");
   }
 
   async function google() {
