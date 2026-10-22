@@ -74,10 +74,14 @@ export function ChatPanel(props: ChatPanelProps) {
 
   const started = useRef(false);
   useEffect(() => {
-    if (props.autoStart && !started.current && messages.length === 0) {
+    if (!props.autoStart || started.current || messages.length > 0) return;
+    // Defer so a dev double-mount can't swallow the first message.
+    const t = setTimeout(() => {
+      if (started.current) return;
       started.current = true;
-      sendMessage({ text: props.autoStart });
-    }
+      sendMessage({ text: props.autoStart! });
+    }, 50);
+    return () => clearTimeout(t);
   }, [props.autoStart, messages.length, sendMessage]);
 
   const busy = status === "submitted" || status === "streaming";
