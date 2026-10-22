@@ -15,4 +15,4 @@
 - Module list for sidebar and Global Assistant comes from src/lib/platform.ts — single source for what is available vs coming soon.
 - Admin access uses the user_roles table + has_role() in RLS; never store roles on profiles — prevents privilege escalation.
 - Colors only via semantic tokens in src/styles.css with light and .dark values — every page must work in both themes.
-- Email sign-up uses our own 6-digit codes (src/lib/signup.functions.ts, signup_codes table with no client policies) sent via Resend; the account is created only after the code is verified and a password is set — keeps unverified emails out.
+- Every account (email or Google) must verify its email once with our own 6-digit Resend code (src/lib/signup.functions.ts); EmailGate in AppShell blocks the app until a row exists in email_verified, which only server code writes — Google alone does not count as verified.
