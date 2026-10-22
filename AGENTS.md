@@ -15,3 +15,4 @@
 - Module list for sidebar and Global Assistant comes from src/lib/platform.ts — single source for what is available vs coming soon.
 - Admin access uses the user_roles table + has_role() in RLS; never store roles on profiles — prevents privilege escalation.
 - Colors only via semantic tokens in src/styles.css with light and .dark values — every page must work in both themes.
+- Resume analysis uses in-request RAG (src/server/resume-rag.ts): resume chunked + JD requirements embedded, top chunks per requirement passed as evidence — keeps every judgement tied to quotable resume text.
