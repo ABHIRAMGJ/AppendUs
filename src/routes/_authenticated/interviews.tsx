@@ -21,9 +21,9 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/interviews")({
   head: () => ({ meta: [
-    { title: "AI Mock Interview — AI CareerOS" },
+    { title: "AI Mock Interview — AppendUs" },
     { name: "description", content: "Voice mock interviews and proctored coding rounds built from your resume and target role." },
-    { property: "og:title", content: "AI Mock Interview — AI CareerOS" },
+    { property: "og:title", content: "AI Mock Interview — AppendUs" },
     { property: "og:description", content: "Voice mock interviews and proctored coding rounds with scored feedback." },
   ] }),
   component: Interviews,

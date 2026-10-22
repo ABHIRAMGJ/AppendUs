@@ -48,7 +48,7 @@ export function GlobalAssistant() {
               <LogoMark className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-sm font-semibold">CareerOS Global Assistant</p>
+              <p className="truncate font-display text-sm font-semibold">AppendUs Global Assistant</p>
               <p className="truncate text-xs opacity-80">Your guide to the platform</p>
             </div>
             <Button size="icon-sm" variant="ghost" className="hover:bg-background/20 hover:text-primary-foreground" onClick={clear} aria-label="Clear chat">
@@ -66,7 +66,7 @@ export function GlobalAssistant() {
             initialMessages={initial}
             onMessagesChange={save}
             emptyIcon={<LogoMark className="h-12 w-12" />}
-            emptyTitle="Hi! I'm your CareerOS Assistant"
+            emptyTitle="Hi! I'm your AppendUs Assistant"
             emptyDescription="I can help you find features, explain this page, and troubleshoot issues."
             suggestions={["Find a feature", "Explain this page", "Help me troubleshoot", "How do I analyze my resume?"]}
           />

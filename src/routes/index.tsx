@@ -11,9 +11,9 @@ import { ThemeToggle } from "@/lib/theme";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI CareerOS — Your Complete Career Operating System" },
+      { title: "AppendUs — Your Complete Career Operating System" },
       { name: "description", content: "AI-powered career guidance, learning plans, resume analysis, mock interviews, coding practice and job tracking in one place." },
-      { property: "og:title", content: "AI CareerOS — Your Complete Career Operating System" },
+      { property: "og:title", content: "AppendUs — Your Complete Career Operating System" },
       { property: "og:description", content: "Go from 'I want this role' to an evidence-backed plan: learn, practice, prove, interview and apply." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -106,7 +106,7 @@ function Landing() {
             <a href="#modules" className="hover:text-foreground">Modules</a>
             <a href="#features" className="hover:text-foreground">Features</a>
             <a href="#journey" className="hover:text-foreground">How it works</a>
-            <a href="#trust" className="hover:text-foreground">Why CareerOS</a>
+            <a href="#trust" className="hover:text-foreground">Why AppendUs</a>
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -233,7 +233,7 @@ function Landing() {
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             <div className="rounded-2xl bg-gradient-primary p-7 text-primary-foreground shadow-glow">
               <GraduationCap className="h-8 w-8" />
-              <h3 className="mt-4 text-xl font-semibold">CareerOS AI Mentor</h3>
+              <h3 className="mt-4 text-xl font-semibold">AppendUs AI Mentor</h3>
               <p className="mt-2 opacity-90">A personal coach for career paths after 10th, 12th, Diploma, B.Tech, MBA and beyond — plus programming, DSA, cloud, AI and interviews.</p>
             </div>
             <div className="surface p-7">
@@ -270,7 +270,7 @@ function Landing() {
       <footer className="border-t py-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:flex-row sm:px-6">
           <Logo />
-          <p>© {new Date().getFullYear()} AI CareerOS. Built to help you grow.</p>
+          <p>© {new Date().getFullYear()} AppendUs. Built to help you grow.</p>
         </div>
       </footer>
     </div>

@@ -1,4 +1,4 @@
-"""Environment configuration for the CareerOS AI service (Python + FastAPI)."""
+"""Environment configuration for the AppendUs AI service (Python + FastAPI)."""
 
 import os
 

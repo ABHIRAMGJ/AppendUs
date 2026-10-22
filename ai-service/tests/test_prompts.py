@@ -37,7 +37,7 @@ def test_mentor_prompt_uses_the_saved_profile():
 
 
 def test_mentor_prompt_without_a_profile_is_still_coherent():
-    assert "CareerOS AI Mentor" in prompts.mentor_system(None)
+    assert "AppendUs AI Mentor" in prompts.mentor_system(None)
 
 
 def test_coding_evaluator_says_it_cannot_run_the_code():

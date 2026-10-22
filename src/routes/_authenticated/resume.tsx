@@ -27,7 +27,7 @@ const TOP_ROLES = [
 ];
 
 export const Route = createFileRoute("/_authenticated/resume")({
-  head: () => ({ meta: [{ title: "AI Resume Analyzer — AI CareerOS" }, { name: "description", content: "Get evidence-based resume feedback for your target role." }] }),
+  head: () => ({ meta: [{ title: "AI Resume Analyzer — AppendUs" }, { name: "description", content: "Get evidence-based resume feedback for your target role." }] }),
   component: Resume,
 });
 

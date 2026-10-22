@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/app/AppShell";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/community")({
-  head: () => ({ meta: [{ title: "Community — AI CareerOS" }, { name: "description", content: "Learn, share and grow together — coming soon." }] }),
+  head: () => ({ meta: [{ title: "Community — AppendUs" }, { name: "description", content: "Learn, share and grow together — coming soon." }] }),
   component: Community,
 });
 

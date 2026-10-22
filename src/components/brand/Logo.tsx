@@ -21,7 +21,7 @@ export function Logo({ to = "/" }: { to?: string }) {
     <Link to={to} className="group flex items-center gap-2 font-display text-lg font-bold tracking-tight">
       <LogoMark />
       <span>
-        Career<span className="text-gradient">OS</span>
+        Append<span className="text-gradient">Us</span>
       </span>
     </Link>
   );
