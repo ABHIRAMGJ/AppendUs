@@ -14,7 +14,185 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      job_applications: {
+        Row: {
+          applied_on: string | null
+          company: string
+          created_at: string
+          id: string
+          notes: string | null
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          applied_on?: string | null
+          company: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          role: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          applied_on?: string | null
+          company?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mentor_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: Json
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: Json
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: Json
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "mentor_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentor_threads: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          education_level: string | null
+          full_name: string | null
+          id: string
+          skills: string | null
+          target_role: string | null
+          updated_at: string
+          weekly_hours: number | null
+        }
+        Insert: {
+          created_at?: string
+          education_level?: string | null
+          full_name?: string | null
+          id: string
+          skills?: string | null
+          target_role?: string | null
+          updated_at?: string
+          weekly_hours?: number | null
+        }
+        Update: {
+          created_at?: string
+          education_level?: string | null
+          full_name?: string | null
+          id?: string
+          skills?: string | null
+          target_role?: string | null
+          updated_at?: string
+          weekly_hours?: number | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          link: string | null
+          status: string
+          tech: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          link?: string | null
+          status?: string
+          tech?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          link?: string | null
+          status?: string
+          tech?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resume_analyses: {
+        Row: {
+          created_at: string
+          id: string
+          result: Json
+          target_role: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          result: Json
+          target_role?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          result?: Json
+          target_role?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
