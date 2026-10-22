@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight, Compass, FileText, Mic, BookOpen, Code2, Briefcase, GraduationCap, ShieldCheck,
-  Target, Search, Hammer, Send, Users, Award, Headphones,
+  Target, Search, Hammer, Send, Users, Award, Headphones, CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/Logo";
@@ -31,6 +31,62 @@ const features = [
   { icon: Briefcase, title: "Job Tracker", text: "Track every application from applied to offer." },
 ];
 
+const modules = [
+  {
+    icon: FileText, title: "AI Resume Analyzer + RAG",
+    intro: "Job-specific resume analysis grounded in evidence from your resume and the job description.",
+    points: [
+      "Upload PDF/DOCX resume and paste a job description",
+      "Select a target domain or job role",
+      "Analyze skills, experience, education, projects and keywords",
+      "Job-specific match scores with evidence",
+      "Find missing skills and weak resume bullets",
+      "Generate improved, ATS-friendly resume content",
+      "Compare multiple resumes or job descriptions",
+      "Every recommendation explained with evidence",
+    ],
+  },
+  {
+    icon: Compass, title: "Career Path Finder",
+    intro: "Multiple realistic paths from wherever you start — never one 'best' career for everyone.",
+    points: [
+      "After 10th: intermediate, diploma, vocational options",
+      "After intermediate: degree, engineering, professional courses",
+      "After B.Tech: software, AI, data, cybersecurity, core, higher studies",
+      "After MBA/M.Tech: specializations and opportunities",
+      "Career switchers and working professionals",
+      "Prerequisites, alternatives, skills, timelines and next step",
+    ],
+  },
+  {
+    icon: BookOpen, title: "Personalized AI Learning Planner",
+    intro: "Plans shaped around your skills, daily time and target role — adjusted as you progress.",
+    points: [
+      "30-, 60-, 90- or 180-day plans",
+      "Customized to current skills, daily time and target role",
+      "Languages, frameworks, tools and concepts to learn",
+      "Weekly milestones, daily tasks and revision sessions",
+      "Coding exercises, quizzes and project assignments",
+      "Track completion, scores, accuracy and weak areas",
+      "Next week's plan adapts to your performance",
+    ],
+  },
+  {
+    icon: Mic, title: "AI Mock Interview Studio",
+    intro: "Realistic interview rounds with follow-ups and feedback on what you actually said.",
+    points: [
+      "Technical interviews by role, company and difficulty",
+      "HR, behavioral, project explanation and communication rounds",
+      "Coding problems with test cases and evaluation",
+      "Resume-based questions about your real projects",
+      "Voice-based practice, where supported",
+      "Follow-up questions based on your answers",
+      "Feedback on correctness, clarity, structure and confidence",
+      "Interview history, score trends and revision plans",
+    ],
+  },
+];
+
 const journey = [
   { icon: Target, label: "Goal" },
   { icon: Search, label: "Gaps" },
@@ -47,6 +103,7 @@ function Landing() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Logo />
           <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
+            <a href="#modules" className="hover:text-foreground">Modules</a>
             <a href="#features" className="hover:text-foreground">Features</a>
             <a href="#journey" className="hover:text-foreground">How it works</a>
             <a href="#trust" className="hover:text-foreground">Why CareerOS</a>
@@ -136,6 +193,42 @@ function Landing() {
           ))}
         </div>
       </section>
+
+      <section id="modules" className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="text-xs font-bold uppercase tracking-widest text-primary">Core modules</span>
+          <h2 className="mt-2 text-3xl font-bold sm:text-4xl">The 4 engines behind your career</h2>
+          <p className="mt-3 text-muted-foreground">Every module is built around your real resume, goals and progress.</p>
+        </div>
+        <div className="mt-12 grid gap-6 md:grid-cols-2">
+          {modules.map((m, i) => (
+            <div key={m.title} className="surface flex flex-col p-7 transition-transform hover:-translate-y-1">
+              <div className="flex items-center gap-4">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow">
+                  <m.icon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-muted-foreground">MODULE 0{i + 1}</p>
+                  <h3 className="text-xl font-semibold">{m.title}</h3>
+                </div>
+              </div>
+              <p className="mt-4 text-sm text-muted-foreground">{m.intro}</p>
+              <ul className="mt-4 flex-1 space-y-2">
+                {m.points.map((p) => (
+                  <li key={p} className="flex gap-2 text-sm">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button asChild variant="hero" className="mt-6 self-start">
+                <Link to="/auth" search={{ mode: "signup" }}>Try it <ArrowRight /></Link>
+              </Button>
+            </div>
+          ))}
+        </div>
+      </section>
+
 
       <section id="features" className="border-y bg-muted/40 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
