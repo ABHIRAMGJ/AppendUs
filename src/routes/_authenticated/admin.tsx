@@ -92,10 +92,32 @@ function Admin() {
     refresh();
   }
 
+  async function del(table: "job_applications" | "projects" | "resume_analyses" | "assessment_attempts" | "code_submissions" | "mentor_threads" | "interview_sessions", id: string, label: string) {
+    if (!window.confirm(`Delete this ${label}? This cannot be undone.`)) return;
+    const { error } = await supabase.from(table).delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    await logAction("delete_record", `${table}/${label}`, { id });
+    toast.success(`${label} deleted`);
+    refresh();
+  }
+
+  async function saveProfile() {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({
+      full_name: form.full_name || null, education_level: form.education_level || null,
+      target_role: form.target_role || null, skills: form.skills || null,
+    }).eq("id", user.id);
+    if (error) { toast.error(error.message); return; }
+    await logAction("edit_profile", user.email ?? user.id, { ...form });
+    toast.success("Profile updated");
+    setEditing(false);
+    refresh();
+  }
+
   const stats = [
     ["Users", data?.profiles.length], ["Job applications", data?.jobs.length], ["Projects", data?.projects.length],
     ["Resume analyses", data?.analyses.length], ["Mentor conversations", data?.threads.length],
-    ["Assessments", data?.attempts.length], ["Code submissions", data?.submissions.length],
+    ["Assessments", data?.attempts.length], ["Code submissions", data?.submissions.length], ["Interviews", data?.sessions.length],
   ] as const;
 
   const health = [
