@@ -10,33 +10,79 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiGenerateRouteImport } from './routes/api/generate'
+import { Route as ApiMentorRouteImport } from './routes/api/mentor'
+import { Route as ApiResumeRouteImport } from './routes/api/resume'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGenerateRoute = ApiGenerateRouteImport.update({
+  id: '/api/generate',
+  path: '/api/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMentorRoute = ApiMentorRouteImport.update({
+  id: '/api/mentor',
+  path: '/api/mentor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiResumeRoute = ApiResumeRouteImport.update({
+  id: '/api/resume',
+  path: '/api/resume',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/mentor': typeof ApiMentorRoute
+  '/api/resume': typeof ApiResumeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/mentor': typeof ApiMentorRoute
+  '/api/resume': typeof ApiResumeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/generate': typeof ApiGenerateRoute
+  '/api/mentor': typeof ApiMentorRoute
+  '/api/resume': typeof ApiResumeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/chat' | '/api/generate' | '/api/mentor' | '/api/resume'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/chat' | '/api/generate' | '/api/mentor' | '/api/resume'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/chat'
+    | '/api/generate'
+    | '/api/mentor'
+    | '/api/resume'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiChatRoute: typeof ApiChatRoute
+  ApiGenerateRoute: typeof ApiGenerateRoute
+  ApiMentorRoute: typeof ApiMentorRoute
+  ApiResumeRoute: typeof ApiResumeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +94,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/generate': {
+      id: '/api/generate'
+      path: '/api/generate'
+      fullPath: '/api/generate'
+      preLoaderRoute: typeof ApiGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mentor': {
+      id: '/api/mentor'
+      path: '/api/mentor'
+      fullPath: '/api/mentor'
+      preLoaderRoute: typeof ApiMentorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/resume': {
+      id: '/api/resume'
+      path: '/api/resume'
+      fullPath: '/api/resume'
+      preLoaderRoute: typeof ApiResumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiChatRoute: ApiChatRoute,
+  ApiGenerateRoute: ApiGenerateRoute,
+  ApiMentorRoute: ApiMentorRoute,
+  ApiResumeRoute: ApiResumeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
