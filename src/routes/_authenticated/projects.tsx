@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ExternalLink, FolderKanban, Plus, Trash2 } from "lucide-react";
+import { ExternalLink, FolderKanban, Globe, Link2, Lock, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { currentUserId } from "@/lib/data";
 import { PageHeader } from "@/components/app/AppShell";
@@ -50,28 +50,45 @@ function Projects() {
     const { error } = await supabase.from("projects").update({ status: status === "done" ? "in_progress" : "done" }).eq("id", id);
     if (error) toast.error(error.message); else refresh();
   }
+  async function setVisibility(id: string, visibility: string) {
+    const { error } = await supabase.from("projects").update({ visibility }).eq("id", id);
+    if (error) toast.error(error.message);
+    else { refresh(); toast.success(visibility === "public" ? "Project is now on your public portfolio" : "Project is private again"); }
+  }
   async function remove(id: string) {
     const { error } = await supabase.from("projects").delete().eq("id", id);
     if (error) toast.error(error.message); else refresh();
   }
+  async function copyPortfolioLink() {
+    const id = await currentUserId();
+    await navigator.clipboard.writeText(`${window.location.origin}/portfolio/${id}`);
+    toast.success("Public portfolio link copied");
+  }
+
+  const publicCount = data.filter((p) => p.visibility === "public").length;
 
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader icon={FolderKanban} title="Project Builder" description="Build real-world projects that prove your skills"
         actions={
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild><Button variant="hero"><Plus /> <span className="hidden sm:inline">New project</span></Button></DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>New project</DialogTitle></DialogHeader>
-              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); add.mutate(f); }}>
-                <div className="space-y-1.5"><Label>Title</Label><Input required value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Description</Label><Textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
-                <div className="space-y-1.5"><Label>Tech stack</Label><Input value={f.tech} onChange={(e) => setF({ ...f, tech: e.target.value })} placeholder="React, Node.js" /></div>
-                <div className="space-y-1.5"><Label>Link (GitHub / live)</Label><Input type="url" value={f.link} onChange={(e) => setF({ ...f, link: e.target.value })} placeholder="https://" /></div>
-                <Button type="submit" variant="hero" className="w-full" disabled={add.isPending}>Save</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            {publicCount > 0 && (
+              <Button variant="outline" onClick={copyPortfolioLink}><Link2 /> <span className="hidden sm:inline">Copy portfolio link</span></Button>
+            )}
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild><Button variant="hero"><Plus /> <span className="hidden sm:inline">New project</span></Button></DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>New project</DialogTitle></DialogHeader>
+                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); add.mutate(f); }}>
+                  <div className="space-y-1.5"><Label>Title</Label><Input required value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></div>
+                  <div className="space-y-1.5"><Label>Description</Label><Textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
+                  <div className="space-y-1.5"><Label>Tech stack</Label><Input value={f.tech} onChange={(e) => setF({ ...f, tech: e.target.value })} placeholder="React, Node.js" /></div>
+                  <div className="space-y-1.5"><Label>Link (GitHub / live)</Label><Input type="url" value={f.link} onChange={(e) => setF({ ...f, link: e.target.value })} placeholder="https://" /></div>
+                  <Button type="submit" variant="hero" className="w-full" disabled={add.isPending}>Save</Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         } />
 
       <h2 className="mb-3 font-semibold">My projects</h2>
@@ -83,12 +100,20 @@ function Projects() {
             <div key={p.id} className="surface flex flex-col p-5">
               <div className="flex items-start justify-between gap-2">
                 <p className="font-semibold">{p.title}</p>
-                <Badge variant="secondary" className={p.status === "done" ? "bg-success/15 text-success" : "bg-primary/15 text-primary"}>{p.status === "done" ? "Completed" : "In progress"}</Badge>
+                <div className="flex shrink-0 gap-1">
+                  <Badge variant="secondary" className={p.status === "done" ? "bg-success/15 text-success" : "bg-primary/15 text-primary"}>{p.status === "done" ? "Completed" : "In progress"}</Badge>
+                  <Badge variant="secondary" className={p.visibility === "public" ? "bg-violet/15 text-violet" : ""}>
+                    {p.visibility === "public" ? <><Globe className="mr-1 h-3 w-3" />Public</> : <><Lock className="mr-1 h-3 w-3" />Private</>}
+                  </Badge>
+                </div>
               </div>
               <p className="mt-1 flex-1 text-sm text-muted-foreground">{p.description}</p>
               {p.tech && <p className="mt-2 text-xs text-muted-foreground">{p.tech}</p>}
-              <div className="mt-4 flex items-center gap-2">
+              <div className="mt-4 flex flex-wrap items-center gap-2">
                 <Button size="sm" variant="outline" onClick={() => toggle(p.id, p.status)}>{p.status === "done" ? "Reopen" : "Mark done"}</Button>
+                <Button size="sm" variant="outline" onClick={() => setVisibility(p.id, p.visibility === "public" ? "private" : "public")}>
+                  {p.visibility === "public" ? "Make private" : "Publish"}
+                </Button>
                 {p.link && <Button size="icon-sm" variant="ghost" asChild><a href={p.link} target="_blank" rel="noreferrer" aria-label="Open link"><ExternalLink /></a></Button>}
                 <Button size="icon-sm" variant="ghost" className="ml-auto" onClick={() => remove(p.id)} aria-label="Delete"><Trash2 /></Button>
               </div>
