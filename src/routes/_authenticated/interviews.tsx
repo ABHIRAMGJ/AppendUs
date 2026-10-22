@@ -37,6 +37,7 @@ type Result = {
   overall_percentage: number; communication_level: string; communication_feedback: string; summary: string;
   strengths: string[]; improvements: string[];
   items: { question: string; your_answer: string; score: number; feedback: string; ideal_answer: string }[];
+  stats?: { total: number; answered: number; skipped: number; wpm: number; fillers: number };
 };
 
 async function call<T>(payload: Record<string, unknown>): Promise<T> {
