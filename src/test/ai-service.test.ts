@@ -46,7 +46,8 @@ describe("AI requests go to the Python service", () => {
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe("http://127.0.0.1:8100/resume");
     expect((calls[0].init.headers as Record<string, string>)["authorization"]).toBe("Bearer session-token");
-    expect(JSON.parse(String(calls[0].init.body)).role).toBe("Frontend Engineer");
+    const sent = JSON.parse(new TextDecoder().decode(calls[0].init.body as ArrayBuffer));
+    expect(sent.role).toBe("Frontend Engineer");
     expect(await response.text()).toBe("analysed");
     expect(response.headers.get("x-vercel-ai-ui-message-stream")).toBe("v1");
   });
@@ -81,7 +82,7 @@ describe("AI requests go to the Python service", () => {
 
   it("keeps the AI key out of the app — only the Python service reads it", () => {
     const offenders = sourceFiles("src")
-      .filter((file) => /\.(ts|tsx)$/.test(file))
+      .filter((file) => /\.(ts|tsx)$/.test(file) && !file.startsWith(join("src", "test")))
       .filter((file) => {
         const text = readFileSync(file, "utf8");
         return text.includes("LOVABLE_API_KEY") || text.includes("ai.gateway.lovable.dev");
