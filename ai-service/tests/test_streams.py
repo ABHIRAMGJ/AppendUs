@@ -43,3 +43,28 @@ def test_collect_stream_joins_everything():
     import asyncio
 
     assert asyncio.run(streams.collect_stream(fake_chunks("a", "b", ""))) == "ab"
+
+
+def test_provider_rejection_is_reported_and_stream_terminates():
+    from app.gateway import GatewayError
+
+    async def rejected():
+        raise GatewayError("AI request rejected.", 401)
+        yield "unreachable"
+
+    parts = run(streams.ui_message_parts(rejected()))
+    events = [json.loads(p[6:]) for p in parts if p.startswith("data: {")]
+    assert {"type": "error", "errorText": "AI request rejected."} in events
+    assert events[-1]["type"] == "finish"
+    assert parts[-1] == "data: [DONE]\n\n"
+
+
+def test_unexpected_failure_does_not_expose_internal_details():
+    async def failed():
+        raise RuntimeError("private diagnostic detail")
+        yield "unreachable"
+
+    parts = run(streams.ui_message_parts(failed()))
+    assert "private diagnostic detail" not in "".join(parts)
+    assert any('"type": "error"' in part for part in parts)
+    assert parts[-1] == "data: [DONE]\n\n"
