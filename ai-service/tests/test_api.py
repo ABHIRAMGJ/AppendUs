@@ -14,10 +14,11 @@ def install(monkeypatch, reply="Hello from Python"):
 
     monkeypatch.setattr(gateway, "stream_text", fake_stream)
     monkeypatch.setattr(auth, "user_from_token", lambda token: _coro({"user_id": "u-1", "email": "a@b.c"}))
-    monkeypatch.setattr(db, "fetch_one", lambda *a, **k: _coro({"id": "row-1"}))
-    monkeypatch.setattr(db, "fetch", lambda *a, **k: _coro([]))
-    monkeypatch.setattr(db, "execute", lambda *a, **k: _coro(1))
-    monkeypatch.setattr(db, "execute_many", lambda *a, **k: _coro(1))
+    monkeypatch.setattr(db, "select_one", lambda *a, **k: _coro({"id": "row-1", "title": "New conversation"}))
+    monkeypatch.setattr(db, "insert", lambda *a, **k: _coro([{"id": "row-1"}]))
+    monkeypatch.setattr(db, "update", lambda *a, **k: _coro(None))
+    monkeypatch.setattr(db, "delete", lambda *a, **k: _coro(None))
+    monkeypatch.setattr(db, "rpc", lambda *a, **k: _coro([]))
 
 
 def _coro(value):
@@ -111,7 +112,7 @@ def test_resume_needs_a_real_file(monkeypatch):
 def test_resume_returns_a_checked_analysis(monkeypatch):
     install(monkeypatch)
 
-    async def fake_index(user_id, resume, role, jd, limit=10):
+    async def fake_index(token, user_id, resume, role, jd, limit=10):
         return "[Excerpt 1 | relevance 0.90]\nBuilt a React dashboard with PostgreSQL."
 
     async def fake_json(schema, **kwargs):
