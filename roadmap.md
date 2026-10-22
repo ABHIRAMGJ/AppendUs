@@ -8,3 +8,5 @@
 - [x] Admin tools: feature flags, audit log, health checks, grant/revoke admin
 - [x] Voice mock interview (real + proctored coding), stored + analysed
 - [ ] Remaining Master Prompt V2 modules: work simulator, skill DNA, knowledge graph, salary comparison, scam checker, etc.
+- [x] Admin full CRUD: edit profiles, delete any user record, interview sessions in console, all actions audited
+- [x] Full Real Interview verified end to end (voice capture, strict scoring, report, history)
