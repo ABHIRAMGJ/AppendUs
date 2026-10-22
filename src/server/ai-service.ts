@@ -16,14 +16,20 @@ export async function toAiService(request: Request, path: string): Promise<Respo
   const auth = request.headers.get("authorization");
   if (auth) headers["authorization"] = auth;
 
+  let body: ArrayBuffer;
+  try {
+    body = await request.arrayBuffer();
+  } catch {
+    // The browser closed the connection before the upload finished.
+    return Response.json({ error: "The request was cancelled. Please try again." }, { status: 499 });
+  }
+
   let upstream: Response;
   try {
-    upstream = await fetch(aiServiceUrl() + path, {
-      method: "POST",
-      headers,
-      body: await request.arrayBuffer(),
-    });
-  } catch {
+    // Not tied to request.signal: a dropped browser connection must not crash the route.
+    upstream = await fetch(aiServiceUrl() + path, { method: "POST", headers, body });
+  } catch (error) {
+    console.error("AI service request failed:", error);
     return Response.json({ error: OFFLINE }, { status: 503 });
   }
 
