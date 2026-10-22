@@ -32,11 +32,12 @@ export const Route = createFileRoute("/_authenticated/interviews")({
 type Mode = "real" | "coding";
 type RealQ = { section: string; question: string };
 type CodeQ = { difficulty: string; title: string; statement: string; examples: string };
-type Answer = { question: string; answer: string; skipped: boolean };
+type Answer = { question: string; answer: string; skipped: boolean; seconds?: number };
 type Result = {
   overall_percentage: number; communication_level: string; communication_feedback: string; summary: string;
   strengths: string[]; improvements: string[];
   items: { question: string; your_answer: string; score: number; feedback: string; ideal_answer: string }[];
+  stats?: { total: number; answered: number; skipped: number; wpm: number; fillers: number };
 };
 
 async function call<T>(payload: Record<string, unknown>): Promise<T> {
@@ -66,13 +67,32 @@ async function readResume(f: File) {
   return f.text();
 }
 
+const FILLERS = /\b(um+|uh+|erm|hmm|like|basically|actually|you know)\b/gi;
+export function speakingStats(answers: Answer[]) {
+  const said = answers.filter((a) => !a.skipped && a.answer);
+  const words = said.reduce((n, a) => n + a.answer.split(/\s+/).filter(Boolean).length, 0);
+  const secs = said.reduce((n, a) => n + (a.seconds ?? 0), 0);
+  const fillers = said.reduce((n, a) => n + (a.answer.match(FILLERS)?.length ?? 0), 0);
+  return { total: answers.length, answered: said.length, skipped: answers.length - said.length, wpm: secs > 0 ? Math.round((words / secs) * 60) : 0, fillers };
+}
+
+function pickVoice() {
+  const vs = window.speechSynthesis.getVoices();
+  return vs.find((v) => /en[-_]IN/i.test(v.lang)) ?? vs.find((v) => /Google.*English/i.test(v.name)) ?? vs.find((v) => v.lang.startsWith("en"));
+}
+
 function speak(text: string): Promise<void> {
   return new Promise((resolve) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return resolve();
+    let done = false;
+    const finish = () => { if (!done) { done = true; clearTimeout(t); resolve(); } };
+    // Safety net: some browsers never fire onend — start listening anyway.
+    const t = setTimeout(finish, 2500 + text.split(/\s+/).length * 450);
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.rate = 0.98; u.lang = "en-IN";
-    u.onend = () => resolve(); u.onerror = () => resolve();
+    const v = pickVoice(); if (v) u.voice = v;
+    u.onend = finish; u.onerror = finish;
     window.speechSynthesis.speak(u);
   });
 }
@@ -202,6 +222,9 @@ function Flow() {
   async function start() {
     if (!setup.resume) { toast.error("Please upload your resume."); return; }
     if (!setup.role.trim()) { toast.error("Please enter your target role."); return; }
+    // Full screen like a real proctored round (must be requested on the click itself).
+    void document.documentElement.requestFullscreen?.().catch(() => {});
+    window.speechSynthesis?.speak(new SpeechSynthesisUtterance("")); // unlock voice on click
     let cam: MediaStream | null = null;
     {
       try { cam = await navigator.mediaDevices.getUserMedia({ video: true, audio: setup.mode === "real" }); cam.getAudioTracks().forEach((t) => t.stop()); setStream(cam); }
@@ -219,9 +242,11 @@ function Flow() {
 
   async function submit(questions: unknown[], answers: Answer[], proctor?: unknown) {
     stopCam(); window.speechSynthesis?.cancel();
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
     setStage("evaluating");
     try {
-      const out = await call<{ result: Result }>({ action: "evaluate", ...base, questions, answers, proctor });
+      const stats = speakingStats(answers);
+      const out = await call<{ result: Result }>({ action: "evaluate", ...base, questions, answers, proctor, stats });
       setResult(out.result); setStage("done");
       qc.invalidateQueries({ queryKey: ["interview-sessions"] });
     } catch (e) { toast.error((e as Error).message); setStage(setup.mode); }
@@ -338,7 +363,7 @@ function RealRound({ qs, stream, onSubmit, onBlocked }: { qs: RealQ[]; stream: M
   function go(skip: boolean) {
     dict.stop(); window.speechSynthesis?.cancel();
     const text = (current + " " + dict.interim).trim();
-    answers.current[i] = { question: q.question, answer: skip ? "" : text, skipped: skip || !text };
+    answers.current[i] = { question: q.question, answer: skip ? "" : text, skipped: skip || !text, seconds: ANSWER_SECONDS - left };
     if (last) onSubmit(answers.current, proc.report()); else setI(i + 1);
   }
   const goRef = useRef(go); goRef.current = go;
@@ -427,6 +452,18 @@ function Report({ r, onBack }: { r: Result; onBack: () => void }) {
         <div className="surface p-6 text-center"><p className="text-sm text-muted-foreground">English communication</p><p className="font-display text-3xl font-bold">{r.communication_level}</p><p className="mt-2 text-xs text-muted-foreground">{r.communication_feedback}</p></div>
         <div className="surface p-6"><p className="text-sm text-muted-foreground">Summary</p><p className="mt-2 text-sm">{r.summary}</p></div>
       </div>
+      {r.stats && (
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+          {[
+            ["Answered", `${r.stats.answered}/${r.stats.total}`],
+            ["Skipped", String(r.stats.skipped)],
+            ["Speaking pace", `${r.stats.wpm} words/min`],
+            ["Filler words", `${r.stats.fillers} (um, uh, like...)`],
+          ].map(([k, v]) => (
+            <div key={k} className="surface p-4"><p className="text-xs text-muted-foreground">{k}</p><p className="mt-1 font-display text-lg font-semibold">{v}</p></div>
+          ))}
+        </div>
+      )}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="surface p-6"><p className="font-semibold">Strengths</p><ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{r.strengths.map((s) => <li key={s}>{s}</li>)}</ul></div>
         <div className="surface p-6"><p className="font-semibold">Improve next</p><ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{r.improvements.map((s) => <li key={s}>{s}</li>)}</ul></div>
@@ -443,7 +480,7 @@ function Report({ r, onBack }: { r: Result; onBack: () => void }) {
         ))}
       </div>
       <p className="text-xs text-muted-foreground">AI-generated assessment for practice. It is not a hiring decision.</p>
-      <Button variant="outline" onClick={onBack}>Back</Button>
+      <div className="flex gap-2 print:hidden"><Button variant="outline" onClick={onBack}>Back</Button><Button variant="outline" onClick={() => window.print()}>Download / print report</Button></div>
     </div>
   );
 }

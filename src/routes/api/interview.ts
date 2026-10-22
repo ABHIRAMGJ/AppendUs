@@ -54,8 +54,8 @@ export const Route = createFileRoute("/api/interview")({
 
           if (action === "evaluate") {
             const qa = (Array.isArray(body.answers) ? body.answers : []).slice(0, 20)
-              .map((a: { question?: string; answer?: string; skipped?: boolean }, i: number) =>
-                `Q${i + 1}: ${s(a.question, 2000)}\nA${i + 1}: ${a.skipped ? "[SKIPPED]" : s(a.answer, 6000) || "[NO ANSWER]"}`).join("\n\n");
+              .map((a: { question?: string; answer?: string; skipped?: boolean; seconds?: number }, i: number) =>
+                `Q${i + 1}: ${s(a.question, 2000)}\nA${i + 1}${a.seconds ? ` (${Number(a.seconds)}s)` : ""}: ${a.skipped ? "[SKIPPED]" : s(a.answer, 6000) || "[NO ANSWER]"}`).join("\n\n");
             const coding = body.mode === "coding";
             const r = streamText({
               ...opts,
@@ -63,7 +63,9 @@ export const Route = createFileRoute("/api/interview")({
               prompt: `${profile}\n\nTRANSCRIPT:\n${qa}`,
               output: Output.object({ schema: evaluation }),
             });
-            const out = await r.output;
+            const raw = await r.output;
+            const st = body.stats && typeof body.stats === "object" ? body.stats : null;
+            const out = st ? { ...raw, stats: { total: Number(st.total) || 0, answered: Number(st.answered) || 0, skipped: Number(st.skipped) || 0, wpm: Number(st.wpm) || 0, fillers: Number(st.fillers) || 0 } } : raw;
             const { data } = await user.supabase.from("interview_sessions").insert({
               user_id: user.userId, mode: coding ? "coding" : "real",
               target_role: s(body.role, 120), package: s(body.package, 60), experience: s(body.experience, 60),
