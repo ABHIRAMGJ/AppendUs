@@ -4,6 +4,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { sendSignupCode, verifyCodeAndCreateAccount } from "@/server/signup.functions";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -160,23 +162,45 @@ function AuthPage() {
                 )}
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Email address</Label>
-                  <Input id="email" type="email" required value={form.email} onChange={set("email")} placeholder="you@example.com" />
+                  <Input id="email" type="email" required disabled={!!codeSentTo} value={form.email} onChange={set("email")} placeholder="you@example.com" />
                 </div>
-                {mode !== "forgot" && (
+                {mode === "signup" && codeSentTo && (
+                  <>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="code">6-digit code</Label>
+                        <button type="button" onClick={resendCode} className="text-xs font-medium text-primary hover:underline">Resend code</button>
+                      </div>
+                      <Input id="code" inputMode="numeric" autoComplete="one-time-code" required maxLength={6} pattern="\d{6}" value={form.code} onChange={set("code")} placeholder="123456" />
+                      <p className="text-xs text-muted-foreground">Sent to {codeSentTo}. Check spam too. <button type="button" className="text-primary hover:underline" onClick={() => setCodeSentTo(null)}>Change email</button></p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="password">Set a password</Label>
+                      <Input id="password" type="password" required minLength={8} value={form.password} onChange={set("password")} placeholder="At least 8 characters" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="confirm">Confirm password</Label>
+                      <Input id="confirm" type="password" required minLength={8} value={form.confirm} onChange={set("confirm")} placeholder="••••••••" />
+                    </div>
+                  </>
+                )}
+                {mode === "signin" && (
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="password">Password</Label>
-                      {mode === "signin" && (
-                        <Link to="/auth" search={{ mode: "forgot" }} className="text-xs font-medium text-primary hover:underline">
-                          Forgot password?
-                        </Link>
-                      )}
+                      <Link to="/auth" search={{ mode: "forgot" }} className="text-xs font-medium text-primary hover:underline">
+                        Forgot password?
+                      </Link>
                     </div>
                     <Input id="password" type="password" required minLength={6} value={form.password} onChange={set("password")} placeholder="••••••••" />
                   </div>
                 )}
                 <Button type="submit" variant="hero" className="h-11 w-full" disabled={loading}>
-                  {loading ? "Please wait..." : mode === "signup" ? "Create Account" : mode === "forgot" ? "Send Reset Link" : "Login"}
+                  {loading
+                    ? "Please wait..."
+                    : mode === "signup"
+                      ? codeSentTo ? "Verify & Create Account" : "Send Code"
+                      : mode === "forgot" ? "Send Reset Link" : "Login"}
                 </Button>
               </form>
               {mode !== "forgot" && (
