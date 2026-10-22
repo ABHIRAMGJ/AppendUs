@@ -4,7 +4,6 @@ import { ArrowRight, Briefcase, FileText, FolderKanban, GraduationCap, Mic, Book
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import hero from "@/assets/hero-student.jpg";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — AI CareerOS" }, { name: "description", content: "Your career progress at a glance." }] }),
@@ -80,7 +79,6 @@ function Dashboard() {
           </div>
         </div>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-primary p-6 text-primary-foreground shadow-glow lg:col-span-2">
-          <img src={hero} alt="" loading="lazy" width={1024} height={1024} className="absolute -right-10 top-0 hidden h-full w-auto object-cover opacity-60 [mask-image:linear-gradient(to_left,black,transparent)] sm:block" />
           <div className="relative max-w-md">
             <p className="text-xs font-semibold uppercase tracking-wider opacity-80">Target role</p>
             <h2 className="mt-1 text-2xl font-bold">{profile?.target_role || "Set your target role"}</h2>
