@@ -38,7 +38,7 @@ function Portfolio() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <header className="border-b">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
           <Logo />

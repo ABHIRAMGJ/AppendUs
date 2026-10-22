@@ -60,7 +60,7 @@
   --radius: 0.875rem;
   --background: oklch(0.985 0.006 270);
   --foreground: oklch(0.2 0.04 268);
-  --card: oklch(1 0 0);
+  --card: oklch(1 0 0 / 0.84);
   --card-foreground: oklch(0.2 0.04 268);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0.04 268);
@@ -88,7 +88,7 @@
   --chart-3: oklch(0.65 0.16 155);
   --chart-4: oklch(0.75 0.15 70);
   --chart-5: oklch(0.65 0.18 220);
-  --sidebar: oklch(1 0 0);
+  --sidebar: oklch(1 0 0 / 0.6);
   --sidebar-foreground: oklch(0.3 0.04 268);
   --sidebar-primary: oklch(0.55 0.22 264);
   --sidebar-primary-foreground: oklch(0.99 0 0);
@@ -107,7 +107,7 @@
 .dark {
   --background: oklch(0.155 0.035 268);
   --foreground: oklch(0.96 0.01 268);
-  --card: oklch(0.2 0.045 268);
+  --card: oklch(0.2 0.045 268 / 0.74);
   --card-foreground: oklch(0.96 0.01 268);
   --popover: oklch(0.2 0.045 268);
   --popover-foreground: oklch(0.96 0.01 268);
@@ -118,7 +118,7 @@
   --secondary: oklch(0.25 0.05 268);
   --secondary-foreground: oklch(0.92 0.02 268);
   --muted: oklch(0.24 0.04 268);
-  --muted-foreground: oklch(0.7 0.03 268);
+  --muted-foreground: oklch(0.76 0.03 268);
   --accent: oklch(0.28 0.07 268);
   --accent-foreground: oklch(0.9 0.06 268);
   --success: oklch(0.7 0.16 155);
@@ -129,7 +129,7 @@
   --ring: oklch(0.63 0.2 262);
   --chart-1: oklch(0.63 0.2 262);
   --chart-2: oklch(0.66 0.22 292);
-  --sidebar: oklch(0.175 0.04 268);
+  --sidebar: oklch(0.175 0.04 268 / 0.52);
   --sidebar-foreground: oklch(0.88 0.02 268);
   --sidebar-primary: oklch(0.63 0.2 262);
   --sidebar-primary-foreground: oklch(0.99 0 0);
@@ -200,4 +200,196 @@
 }
 @utility animate-float {
   animation: float-y 5s ease-in-out infinite;
+}
+
+/* ============ Futuristic animated background ============ */
+:root {
+  --anim-aurora-1: rgba(80, 70, 235, 0.40);
+  --anim-aurora-2: rgba(140, 80, 245, 0.32);
+  --anim-aurora-3: rgba(20, 160, 235, 0.26);
+  --anim-aurora-4: rgba(240, 90, 170, 0.18);
+  --anim-grid: rgba(70, 60, 200, 0.10);
+  --anim-dot: rgba(79, 70, 229, 0.62);
+  --anim-line: rgba(124, 58, 237, 0.30);
+  --anim-glow: rgba(99, 102, 241, 0.80);
+  --anim-beam: rgba(99, 102, 241, 0.26);
+  --anim-ribbon-opacity: 0.20;
+  --anim-blend: normal;
+  --anim-veil: rgba(255, 255, 255, 0.22);
+  --anim-noise-opacity: 0.05;
+  --anim-dots-opacity: 0.85;
+}
+
+.dark {
+  --anim-aurora-1: rgba(99, 102, 241, 0.52);
+  --anim-aurora-2: rgba(168, 85, 247, 0.44);
+  --anim-aurora-3: rgba(34, 211, 238, 0.32);
+  --anim-aurora-4: rgba(244, 114, 182, 0.24);
+  --anim-grid: rgba(150, 170, 255, 0.12);
+  --anim-dot: rgba(170, 185, 255, 0.88);
+  --anim-line: rgba(167, 139, 250, 0.38);
+  --anim-glow: rgba(165, 180, 252, 0.95);
+  --anim-beam: rgba(129, 140, 248, 0.34);
+  --anim-ribbon-opacity: 0.42;
+  --anim-blend: plus-lighter;
+  --anim-veil: rgba(8, 8, 26, 0.28);
+  --anim-noise-opacity: 0.075;
+  --anim-dots-opacity: 1;
+}
+
+@layer base {
+  .surface,
+  .bg-card {
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    backdrop-filter: blur(16px) saturate(1.3);
+  }
+  [data-sidebar="sidebar"] {
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    backdrop-filter: blur(24px) saturate(1.4);
+  }
+}
+
+.anim-root {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout paint style;
+}
+
+.anim-aurora {
+  position: absolute;
+  inset: 0;
+  filter: blur(64px) saturate(1.25);
+  transform: translate3d(calc(var(--anim-mx, 0) * -30px), calc(var(--anim-my, 0) * -30px), 0);
+  transition: transform 700ms ease-out;
+}
+
+.anim-blob {
+  position: absolute;
+  display: block;
+  border-radius: 9999px;
+  will-change: transform;
+}
+.anim-blob-1 { width: 52vw; height: 52vw; left: -18vw; top: 18vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-1), transparent 68%); animation: anim-drift-1 26s ease-in-out infinite; }
+.anim-blob-2 { width: 40vw; height: 40vw; right: -10vw; top: 4vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-2), transparent 68%); animation: anim-drift-2 32s ease-in-out infinite; }
+.anim-blob-3 { width: 56vw; height: 40vw; left: 0vw; bottom: -22vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-3), transparent 70%); animation: anim-drift-3 38s ease-in-out infinite; }
+.anim-blob-4 { width: 30vw; height: 30vw; right: 10vw; bottom: 6vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-4), transparent 66%); animation: anim-drift-1 44s ease-in-out infinite reverse; }
+
+.anim-ribbons {
+  position: absolute;
+  inset: 0;
+  opacity: var(--anim-ribbon-opacity);
+  mix-blend-mode: var(--anim-blend);
+}
+.anim-ribbon {
+  position: absolute;
+  inset: -30%;
+  border-radius: 42%;
+  filter: blur(42px);
+  will-change: transform;
+}
+.anim-ribbon-1 {
+  background: conic-gradient(from 0deg, transparent 0deg, var(--anim-aurora-1) 46deg, transparent 96deg, transparent 190deg, var(--anim-aurora-2) 240deg, transparent 300deg);
+  animation: anim-spin 46s linear infinite;
+}
+.anim-ribbon-2 {
+  background: conic-gradient(from 120deg, transparent 0deg, var(--anim-aurora-3) 60deg, transparent 120deg, transparent 210deg, var(--anim-aurora-4) 260deg, transparent 320deg);
+  animation: anim-spin 62s linear infinite reverse;
+  opacity: 0.75;
+}
+
+.anim-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--anim-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--anim-grid) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 150% 120% at 50% 45%, #000 30%, transparent 92%);
+  mask-image: radial-gradient(ellipse 150% 120% at 50% 45%, #000 30%, transparent 92%);
+  animation: anim-grid-pan 14s linear infinite;
+}
+
+.anim-horizon {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -16vh;
+  height: 48vh;
+  background: radial-gradient(ellipse at 50% 100%, var(--anim-aurora-1), transparent 70%);
+  filter: blur(28px);
+  opacity: 0.6;
+}
+
+.anim-dots {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: var(--anim-dots-opacity);
+}
+
+.anim-beam { position: absolute; will-change: transform; filter: blur(30px); }
+.anim-beam-h {
+  left: -15%;
+  right: -15%;
+  top: 0;
+  height: 190px;
+  background: linear-gradient(180deg, transparent, var(--anim-beam) 48%, var(--anim-beam) 52%, transparent);
+  animation: anim-scan-down 11s ease-in-out infinite;
+}
+.anim-beam-v {
+  top: -15%;
+  bottom: -15%;
+  left: 0;
+  width: 190px;
+  background: linear-gradient(90deg, transparent, var(--anim-beam) 48%, var(--anim-beam) 52%, transparent);
+  animation: anim-scan-right 17s ease-in-out infinite;
+}
+
+.anim-noise {
+  position: absolute;
+  inset: 0;
+  opacity: var(--anim-noise-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.anim-veil { position: absolute; inset: 0; background: var(--anim-veil); }
+.anim-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, transparent 66%, var(--anim-veil) 100%); }
+
+@keyframes anim-drift-1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(9vw, 7vh, 0) scale(1.18); }
+}
+@keyframes anim-drift-2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.05); }
+  50% { transform: translate3d(-11vw, 9vh, 0) scale(0.9); }
+}
+@keyframes anim-drift-3 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.95); }
+  50% { transform: translate3d(7vw, -8vh, 0) scale(1.15); }
+}
+@keyframes anim-spin { to { transform: rotate(360deg); } }
+@keyframes anim-grid-pan { to { background-position: 56px 56px, 56px 56px; } }
+@keyframes anim-scan-down {
+  0% { transform: translateY(-12vh); opacity: 0; }
+  12% { opacity: 0.6; }
+  88% { opacity: 0.6; }
+  100% { transform: translateY(112vh); opacity: 0; }
+}
+@keyframes anim-scan-right {
+  0% { transform: translateX(-12vw); opacity: 0; }
+  12% { opacity: 0.5; }
+  88% { opacity: 0.5; }
+  100% { transform: translateX(112vw); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-root,
+  .anim-root * {
+    animation: none !important;
+    transition: none !important;
+  }
 }

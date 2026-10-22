@@ -97,7 +97,7 @@ const journey = [
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Logo />
@@ -165,7 +165,7 @@ function Landing() {
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {journey.map((j, i) => (
             <div key={j.label} className="surface relative p-5 text-center">
-              <span className="absolute right-3 top-3 text-xs font-bold text-muted-foreground">0{i + 1}</span>
+              <span className="absolute right-3 top-3 text-xs font-bold text-primary/70">0{i + 1}</span>
               <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow">
                 <j.icon className="h-5 w-5" />
               </div>
@@ -211,7 +211,7 @@ function Landing() {
       </section>
 
 
-      <section id="features" className="border-y bg-muted/40 py-20">
+      <section id="features" className="border-y bg-muted/25 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold sm:text-4xl">Everything for your career, in one OS</h2>
