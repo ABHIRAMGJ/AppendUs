@@ -17,12 +17,10 @@ from . import config, db, gateway, prompts, rag, schemas, scoring, streams
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    """Open the database pool once per process and close it on shutdown."""
-    await db.open_pool()
+    """Free the gateway connection on shutdown."""
     try:
         yield
     finally:
-        await db.close_pool()
         await gateway.close_client()
 
 
@@ -123,6 +121,17 @@ def require_user_id(user_id: str | None) -> str:
     return user_id
 
 
+async def session_from(request: Request) -> tuple[str, str]:
+    """(user id, bearer token) for the caller, or 401 when not signed in."""
+    from . import auth
+
+    token = auth.bearer(dict(request.headers)) or ""
+    user = await auth.user_from_token(token or None)
+    if not user:
+        raise gateway.GatewayError("Please sign in.", 401)
+    return str(user["user_id"]), token
+
+
 def sse_response(chunks: Awaitable[Any] | Any) -> StreamingResponse:
     return StreamingResponse(chunks, media_type="text/event-stream", headers=UI_HEADERS)
 
@@ -137,13 +146,7 @@ async def index() -> dict[str, str]:
 
 @app.get("/health")
 async def health() -> JSONResponse:
-    database = "not configured"
-    if config.DB_URL and db.pool is not None:
-        try:
-            await db.fetch_one("select 1 as ok")
-            database = "ok"
-        except Exception:  # noqa: BLE001 - report, never crash the check
-            database = "unreachable"
+    database = "rest" if config.SUPABASE_URL and config.SUPABASE_KEY else "not configured"
     return JSONResponse(
         {
             "status": "ok" if database in ("ok", "not configured") else "degraded",
@@ -176,37 +179,29 @@ async def chat(request: Request) -> StreamingResponse:
 
 @app.post("/mentor")
 async def mentor(request: Request) -> StreamingResponse:
-    user_id = require_user_id(await user_id_from(request))
+    user_id, token = await session_from(request)
     body = await request.json()
     thread_id = text(body.get("id"), 60)
     messages = model_messages(body.get("messages"))
     if not thread_id or not messages:
         raise gateway.GatewayError("Open a conversation first.", 400)
 
-    thread = await db.fetch_one(
-        "select id, title from public.mentor_threads where id = %s and user_id = %s",
-        (thread_id, user_id),
-    )
+    thread = await db.select_one(token, "mentor_threads", {"id": thread_id, "user_id": user_id}, columns="id,title")
     if not thread:
         raise gateway.GatewayError("Conversation not found.", 404)
 
     raw = body.get("messages")
     last = raw[-1] if isinstance(raw, list) and raw else None
+    now = datetime.now(timezone.utc).isoformat()
     if isinstance(last, Mapping) and last.get("role") == "user":
-        await db.execute(
-            "insert into public.mentor_messages (thread_id, user_id, message) values (%s, %s, %s::jsonb)",
-            (thread_id, user_id, json.dumps(last, default=str)),
-        )
+        await db.insert(token, "mentor_messages", [{"thread_id": thread_id, "user_id": user_id, "message": last}])
         asked = messages[-1]["content"].strip()
         if thread.get("title") == "New conversation" and asked:
-            await db.execute(
-                "update public.mentor_threads set title = %s, updated_at = now() where id = %s",
-                (asked[:60], thread_id),
-            )
+            await db.update(token, "mentor_threads", {"id": thread_id}, {"title": asked[:60], "updated_at": now})
         else:
-            await db.execute("update public.mentor_threads set updated_at = now() where id = %s", (thread_id,))
+            await db.update(token, "mentor_threads", {"id": thread_id}, {"updated_at": now})
 
-    profile = await db.fetch_one("select * from public.profiles where id = %s", (user_id,))
+    profile = await db.select_one(token, "profiles", {"id": user_id})
     system = prompts.mentor_system(profile)
 
     async def persisted() -> Any:
@@ -222,9 +217,10 @@ async def mentor(request: Request) -> StreamingResponse:
             yield part
         reply = "".join(collected).strip()
         if reply:
-            await db.execute(
-                "insert into public.mentor_messages (thread_id, user_id, message) values (%s, %s, %s::jsonb)",
-                (thread_id, user_id, json.dumps({"role": "assistant", "parts": [{"type": "text", "text": reply}]}, default=str)),
+            await db.insert(
+                token,
+                "mentor_messages",
+                [{"thread_id": thread_id, "user_id": user_id, "message": {"role": "assistant", "parts": [{"type": "text", "text": reply}]}}],
             )
 
     return sse_response(persisted())
