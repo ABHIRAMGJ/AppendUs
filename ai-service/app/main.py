@@ -5,9 +5,9 @@ AI Mentor, long-form generators, quizzes, resume analysis with pgvector RAG, and
 the real/coding mock interviews. The React app only forwards signed-in requests.
 """
 
-import json
 from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -42,6 +42,13 @@ UI_HEADERS = {
 @app.exception_handler(gateway.GatewayError)
 async def gateway_error_handler(_: Request, exc: gateway.GatewayError) -> JSONResponse:
     return JSONResponse({"error": exc.message}, status_code=exc.status)
+
+
+@app.exception_handler(db.StoreError)
+async def store_error_handler(_: Request, exc: db.StoreError) -> JSONResponse:
+    return JSONResponse(
+        {"error": f"Saved data is temporarily unavailable ({exc}). Please try again."}, status_code=503
+    )
 
 
 @app.exception_handler(scoring.QuizInvalid)
