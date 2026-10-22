@@ -1,6 +1,6 @@
 # Roadmap
-- [x] Sign up / login: works; added resend-verification button and clear "verify first" message
-- [ ] Verification email delivery: needs user choice (own email domain, or skip verification)
-- [ ] Welcome email via Resend (needs a verified sending domain in Resend)
-- [ ] Module pages not responding: needs which page fails
-- [ ] Build rest of Master Prompt V2 PDF: 4 modules complete, login & security, extra modules, admin tools
+- [x] Sign up / login works; resend-verification button and "verify first" message added
+- [x] Checked all 4 core modules end to end; fixed Mock Interview not starting
+- [ ] Own email domain for verification emails (waiting on user to finish domain setup)
+- [ ] Welcome email (after domain is set up)
+- [ ] Rest of Master Prompt V2 PDF: deeper module features, login & security, extra modules, admin tools
