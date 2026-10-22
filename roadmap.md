@@ -4,5 +4,6 @@
 - [ ] Own email domain for verification emails (waiting on user to finish domain setup)
 - [x] Admin role granted to gjabhiram001@gmail.com; admin area verified showing user data
 - [ ] Welcome email (after domain is set up)
-- [ ] Build out Skill Assessments, Coding Practice, Projects, Job Tracker per Master Prompt V2
-- [ ] Extra admin tools per Master Prompt V2
+- [x] Skill Assessments (scored quizzes + history), Coding Practice (test cases, timer, saved submissions), Projects (public/private + portfolio page), Job Tracker (deadlines, next actions)
+- [x] Admin tools: feature flags, audit log, health checks, grant/revoke admin
+- [ ] Remaining Master Prompt V2 modules: work simulator, skill DNA, knowledge graph, salary comparison, scam checker, etc.
