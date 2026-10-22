@@ -10,4 +10,5 @@
 - [ ] Remaining Master Prompt V2 modules: work simulator, skill DNA, knowledge graph, salary comparison, scam checker, etc.
 - [x] Admin full CRUD: edit profiles, delete any user record, interview sessions in console, all actions audited
 - [x] Full Real Interview verified end to end (voice capture, strict scoring, report, history)
-- [ ] Python + FastAPI AI service: move ALL AI out of the app; improve accuracy (recompute scores in code, verify keywords against the resume, strict schema validation + retries) and features; pytest suite, GitHub Actions CI, Dockerfile, docker-compose
+- [x] Python + FastAPI AI service: all AI moved out of the app; scores recomputed in code, keywords verified against the resume, strict schema validation; 40 pytest tests, GitHub Actions CI, Dockerfile, docker-compose
+- [ ] Host the Python AI service publicly and set AI_SERVICE_URL there (it runs locally in the sandbox for now)
