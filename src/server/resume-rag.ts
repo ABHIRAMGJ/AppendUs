@@ -57,7 +57,7 @@ async function embed(inputs: string[]): Promise<number[][]> {
 
 function cosine(a: number[], b: number[]) {
   let d = 0, na = 0, nb = 0;
-  for (let i = 0; i < a.length; i++) { d += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+  for (let i = 0; i < a.length; i++) { const x = a[i] ?? 0, y = b[i] ?? 0; d += x * y; na += x * x; nb += y * y; }
   return d / (Math.sqrt(na) * Math.sqrt(nb) || 1);
 }
 
@@ -69,7 +69,7 @@ export async function retrieve(chunks: Chunk[], reqs: string[], k = 3): Promise<
   return reqs.map((requirement, i) => ({
     requirement,
     evidence: cv
-      .map((v, j) => ({ id: chunks[j].id, score: Math.round(cosine(rv[i], v) * 100) / 100 }))
+      .map((v, j) => ({ id: chunks[j]?.id ?? "", score: Math.round(cosine(rv[i] ?? [], v) * 100) / 100 }))
       .sort((a, b) => b.score - a.score)
       .slice(0, k),
   }));
