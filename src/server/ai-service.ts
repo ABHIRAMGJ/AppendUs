@@ -51,7 +51,8 @@ export async function checkAiService(): Promise<{ ok: boolean; detail: string }>
       gateway?: string;
     } | null;
     if (!res.ok) return { ok: false, detail: "AI service returned an error" };
-    if (data?.database && data.database !== "ok") {
+    // "rest" is the healthy state: the service reads data through the REST API as the caller.
+    if (data?.database && data.database !== "ok" && data.database !== "rest") {
       return { ok: false, detail: `AI service database: ${data.database}` };
     }
     return { ok: true, detail: data?.runtime ?? "AI service reachable" };

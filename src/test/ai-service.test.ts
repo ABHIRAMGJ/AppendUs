@@ -81,6 +81,20 @@ describe("AI requests go to the Python service", () => {
     expect(status.detail).toContain("unreachable");
   });
 
+  it("reports a healthy service when its data layer is the REST API", async () => {
+    vi.stubGlobal(
+      "fetch",
+      async () =>
+        new Response(JSON.stringify({ runtime: "python-fastapi", database: "rest", gateway: "configured" }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    const status = await checkAiService();
+    expect(status.ok).toBe(true);
+    expect(status.detail).toBe("python-fastapi");
+  });
+
   it("keeps the AI key out of the app — only the Python service reads it", () => {
     const offenders = sourceFiles("src")
       .filter((file) => /\.(ts|tsx)$/.test(file) && !file.startsWith(join("src", "test")))
