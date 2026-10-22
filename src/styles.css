@@ -272,9 +272,9 @@
   border-radius: 9999px;
   will-change: transform;
 }
-.anim-blob-1 { width: 46vw; height: 46vw; left: -8vw; top: -14vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-1), transparent 68%); animation: anim-drift-1 26s ease-in-out infinite; }
+.anim-blob-1 { width: 52vw; height: 52vw; left: -18vw; top: 18vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-1), transparent 68%); animation: anim-drift-1 26s ease-in-out infinite; }
 .anim-blob-2 { width: 40vw; height: 40vw; right: -10vw; top: 4vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-2), transparent 68%); animation: anim-drift-2 32s ease-in-out infinite; }
-.anim-blob-3 { width: 54vw; height: 38vw; left: 16vw; bottom: -20vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-3), transparent 70%); animation: anim-drift-3 38s ease-in-out infinite; }
+.anim-blob-3 { width: 56vw; height: 40vw; left: 0vw; bottom: -22vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-3), transparent 70%); animation: anim-drift-3 38s ease-in-out infinite; }
 .anim-blob-4 { width: 30vw; height: 30vw; right: 10vw; bottom: 6vh; background: radial-gradient(circle at 50% 50%, var(--anim-aurora-4), transparent 66%); animation: anim-drift-1 44s ease-in-out infinite reverse; }
 
 .anim-ribbons {
@@ -307,8 +307,8 @@
     linear-gradient(to right, var(--anim-grid) 1px, transparent 1px),
     linear-gradient(to bottom, var(--anim-grid) 1px, transparent 1px);
   background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse 115% 85% at 50% 42%, #000 18%, transparent 76%);
-  mask-image: radial-gradient(ellipse 115% 85% at 50% 42%, #000 18%, transparent 76%);
+  -webkit-mask-image: radial-gradient(ellipse 150% 120% at 50% 45%, #000 30%, transparent 92%);
+  mask-image: radial-gradient(ellipse 150% 120% at 50% 45%, #000 30%, transparent 92%);
   animation: anim-grid-pan 14s linear infinite;
 }
 
@@ -357,7 +357,7 @@
 }
 
 .anim-veil { position: absolute; inset: 0; background: var(--anim-veil); }
-.anim-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, transparent 52%, var(--anim-veil) 100%); }
+.anim-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, transparent 66%, var(--anim-veil) 100%); }
 
 @keyframes anim-drift-1 {
   0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
