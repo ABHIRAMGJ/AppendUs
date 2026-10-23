@@ -47,6 +47,8 @@ class FakeStream:
 class FakeClient:
     """Scripts one outcome per chat request, in order, and records the models tried."""
 
+    is_closed = False
+
     def __init__(self, outcomes: list[tuple[int, list[str] | dict]]) -> None:
         self.outcomes = outcomes
         self.models: list[str] = []
