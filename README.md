@@ -6,7 +6,6 @@
 
 
 
-Continue developing this project in the (https://lovable.dev/projects/6b3c9a5c-8354-4534-b9a5-3536b73fa5aa).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.
