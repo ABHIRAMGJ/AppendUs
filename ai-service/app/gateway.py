@@ -252,18 +252,25 @@ async def embed(texts: Sequence[str]) -> list[list[float]]:
 
 async def provider_probe() -> dict[str, Any]:
     """One tiny real request so the hosting settings can be checked from outside."""
-    res = await client().post(
-        f"{config.GATEWAY_BASE}/chat/completions",
-        headers=_headers(),
-        json={
-            "model": config.CHAT_MODEL,
-            "max_tokens": 8,
-            "messages": [{"role": "user", "content": "Reply with the single word OK."}],
-        },
-    )
-    if res.status_code != 200:
-        raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
-    return {"provider": config.AI_PROVIDER, "model": config.CHAT_MODEL, "accepted": True}
+    models = _chat_models()
+    last_error: GatewayError | None = None
+    for index, model in enumerate(models):
+        res = await client().post(
+            f"{config.GATEWAY_BASE}/chat/completions",
+            headers=_headers(),
+            json={
+                "model": model,
+                "max_tokens": 8,
+                "messages": [{"role": "user", "content": "Reply with the single word OK."}],
+            },
+        )
+        if res.status_code == 200:
+            return {"provider": config.AI_PROVIDER, "model": model, "accepted": True}
+        last_error = GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+        if index + 1 < len(models) and _is_retryable(last_error):
+            continue
+        raise last_error
+    raise last_error or GatewayError("The AI service had a problem. Please try again.", 502)
 
 
 async def provider_models() -> list[str]:
