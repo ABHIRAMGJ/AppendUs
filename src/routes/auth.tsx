@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
@@ -47,8 +47,24 @@ function AuthPage() {
   const [sent, setSent] = useState<string | null>(null);
   const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", password: "", code: "", confirm: "" });
+  const [googleBusy, setGoogleBusy] = useState(false);
   const sendCode = useServerFn(sendSignupCode);
   const createAccount = useServerFn(verifyCodeAndCreateAccount);
+
+  // Coming back from Google (or already signed in): go straight into the app.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session) navigate({ to: "/dashboard", replace: true });
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) navigate({ to: "/dashboard", replace: true });
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -119,13 +135,20 @@ function AuthPage() {
   }
 
   async function google() {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
-    if (result.error) {
+    setGoogleBusy(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
+      if (result.error) {
+        toast.error("Google sign-in failed. Please try again.");
+        return;
+      }
+      if (result.redirected) return;
+      navigate({ to: "/dashboard", replace: true });
+    } catch {
       toast.error("Google sign-in failed. Please try again.");
-      return;
+    } finally {
+      setGoogleBusy(false);
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard" });
   }
 
   const title = mode === "signup" ? "Create your account" : mode === "forgot" ? "Reset your password" : "Welcome back";
