@@ -90,36 +90,62 @@ def _model_payload(system: str, messages: list[dict[str, Any]]) -> list[dict[str
     return ([{"role": "system", "content": system}] if system else []) + messages
 
 
-async def stream_text(system: str, messages: list[dict[str, Any]]) -> AsyncIterator[str]:
-    """Yield answer text as it is produced by the model."""
-    payload: dict[str, Any] = {
-        "model": config.CHAT_MODEL,
-        "stream": True,
-        "messages": _model_payload(system, messages),
-    }
-    if config.REASONING_EFFORT:
-        payload["reasoning_effort"] = config.REASONING_EFFORT
+_RETRYABLE = {429, 500, 502, 503, 529}
 
-    async with client().stream(
-        "POST", f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
-    ) as res:
-        if res.status_code != 200:
-            body = (await res.aread()).decode("utf-8", "replace")[:600]
-            raise GatewayError(provider_detail(res.status_code, body), res.status_code)
-        async for line in res.aiter_lines():
-            if not line.startswith("data:"):
+
+def _chat_models() -> list[str]:
+    """Main model first, then each configured backup."""
+    return [config.CHAT_MODEL, *config.CHAT_MODEL_FALLBACKS]
+
+
+def _is_retryable(err: "GatewayError") -> bool:
+    """Busy/overloaded answers are worth retrying on a backup model; bad keys are not."""
+    if err.status in _RETRYABLE:
+        return True
+    text = err.message.lower()
+    return "high demand" in text or "overloaded" in text or "temporarily unavailable" in text
+
+
+async def stream_text(system: str, messages: list[dict[str, Any]]) -> AsyncIterator[str]:
+    """Yield answer text as it is produced by the model, falling back to backup models."""
+    models = _chat_models()
+    last_error: GatewayError | None = None
+    for index, model in enumerate(models):
+        payload: dict[str, Any] = {
+            "model": model,
+            "stream": True,
+            "messages": _model_payload(system, messages),
+        }
+        if config.REASONING_EFFORT:
+            payload["reasoning_effort"] = config.REASONING_EFFORT
+        try:
+            async with client().stream(
+                "POST", f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
+            ) as res:
+                if res.status_code != 200:
+                    body = (await res.aread()).decode("utf-8", "replace")[:600]
+                    raise GatewayError(provider_detail(res.status_code, body), res.status_code)
+                async for line in res.aiter_lines():
+                    if not line.startswith("data:"):
+                        continue
+                    data = line[5:].strip()
+                    if not data or data == "[DONE]":
+                        continue
+                    try:
+                        chunk = json.loads(data)
+                    except json.JSONDecodeError:
+                        continue
+                    for choice in chunk.get("choices") or []:
+                        delta = (choice.get("delta") or {}).get("content")
+                        if delta:
+                            yield delta
+            return
+        except GatewayError as exc:
+            last_error = exc
+            if index + 1 < len(models) and _is_retryable(exc):
                 continue
-            data = line[5:].strip()
-            if not data or data == "[DONE]":
-                continue
-            try:
-                chunk = json.loads(data)
-            except json.JSONDecodeError:
-                continue
-            for choice in chunk.get("choices") or []:
-                delta = (choice.get("delta") or {}).get("content")
-                if delta:
-                    yield delta
+            raise
+    raise last_error or GatewayError("The AI service had a problem. Please try again.", 502)
 
 
 async def complete_json(
