@@ -181,10 +181,28 @@ TASKS = {
 }
 
 
-def brief_for(task: str, raw_input: Mapping[str, object] | None, limit: int = 12000) -> str | None:
-    """Build the generation brief, truncating every input field for safety."""
+# The field each task cares about most, used when a caller sends a bare string.
+TASK_PRIMARY = {
+    "plan": "role",
+    "company": "company",
+    "code": "problem",
+    "pathways": "stage",
+    "career": "role",
+}
+
+
+def brief_for(task: str, raw_input: object | None, limit: int = 12000) -> str | None:
+    """Build the generation brief, truncating every input field for safety.
+
+    A bare string is accepted and treated as the task's main field, so a caller
+    that forgets the {"role": ...} shape gets an answer instead of a crash.
+    """
     builder = TASKS.get(task)
     if builder is None:
         return None
-    cleaned = {k: str(v if v is not None else "")[:limit] for k, v in (raw_input or {}).items()}
+    if isinstance(raw_input, str):
+        raw_input = {TASK_PRIMARY.get(task, "topic"): raw_input}
+    if not isinstance(raw_input, Mapping):
+        raw_input = {}
+    cleaned = {k: str(v if v is not None else "")[:limit] for k, v in raw_input.items()}
     return builder(cleaned)
