@@ -1,7 +1,7 @@
 """Client for the Lovable AI Gateway: streaming chat, strict JSON and embeddings."""
 
 import json
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncIterator, Mapping, Sequence
 from typing import Any
 
 import httpx
@@ -29,6 +29,30 @@ class GatewayError(Exception):
 
 def friendly_message(status: int) -> str:
     return _FRIENDLY.get(status, "The AI service had a problem. Please try again.")
+
+
+def provider_detail(status: int, body: str) -> str:
+    """Friendly wording plus the provider's own short reason, with secrets removed."""
+    try:
+        data = json.loads(body)
+    except (json.JSONDecodeError, TypeError):
+        data = None
+    if isinstance(data, Mapping):
+        err = data.get("error")
+        if isinstance(err, Mapping):
+            detail = str(err.get("message") or err.get("status") or "")
+        elif isinstance(err, str):
+            detail = err
+        else:
+            detail = str(data.get("message") or data.get("detail") or "")
+    else:
+        detail = body
+    detail = " ".join(detail.split())[:180]
+    for secret in (config.GATEWAY_KEY, config.SUPABASE_KEY):
+        if secret:
+            detail = detail.replace(secret, "[redacted]")
+    base = friendly_message(status)
+    return base if not detail or detail == base else f"{base} Provider says: {detail}"
 
 
 _client: httpx.AsyncClient | None = None
@@ -80,8 +104,8 @@ async def stream_text(system: str, messages: list[dict[str, Any]]) -> AsyncItera
         "POST", f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
     ) as res:
         if res.status_code != 200:
-            body = (await res.aread()).decode("utf-8", "replace")[:400]
-            raise GatewayError(friendly_message(res.status_code), res.status_code)
+            body = (await res.aread()).decode("utf-8", "replace")[:600]
+            raise GatewayError(provider_detail(res.status_code, body), res.status_code)
         async for line in res.aiter_lines():
             if not line.startswith("data:"):
                 continue
@@ -147,7 +171,7 @@ async def complete_json(
             f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
         )
         if res.status_code != 200:
-            raise GatewayError(friendly_message(res.status_code), res.status_code)
+            raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
 
         try:
             content = res.json()["choices"][0]["message"]["content"] or ""
@@ -177,7 +201,7 @@ async def embed(texts: Sequence[str]) -> list[list[float]]:
             json={"model": config.EMBED_MODEL, "input": batch},
         )
         if res.status_code != 200:
-            raise GatewayError(friendly_message(res.status_code), res.status_code)
+            raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
         ordered: list[list[float] | None] = [None] * len(batch)
         for item in res.json().get("data", []):
             index = item.get("index")
@@ -188,3 +212,32 @@ async def embed(texts: Sequence[str]) -> list[list[float]]:
                 raise GatewayError("The AI service returned an unusable embedding.", 502)
         out.extend(v for v in ordered if v is not None)
     return out
+
+
+async def provider_probe() -> dict[str, Any]:
+    """One tiny real request so the hosting settings can be checked from outside."""
+    res = await client().post(
+        f"{config.GATEWAY_BASE}/chat/completions",
+        headers=_headers(),
+        json={
+            "model": config.CHAT_MODEL,
+            "max_tokens": 8,
+            "messages": [{"role": "user", "content": "Reply with the single word OK."}],
+        },
+    )
+    if res.status_code != 200:
+        raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+    return {"provider": config.AI_PROVIDER, "model": config.CHAT_MODEL, "accepted": True}
+
+
+async def provider_models() -> list[str]:
+    """Model names the configured key can actually use."""
+    res = await client().get(f"{config.GATEWAY_BASE}/models", headers=_headers())
+    if res.status_code != 200:
+        raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+    data = res.json()
+    items = data.get("data") if isinstance(data, Mapping) else None
+    if not isinstance(items, list):
+        items = data.get("models") if isinstance(data, Mapping) else []
+    names = [str(item.get("id") or item.get("name")) for item in items if isinstance(item, Mapping)]
+    return sorted(name for name in names if name and name != "None")[:80]

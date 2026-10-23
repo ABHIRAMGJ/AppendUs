@@ -396,3 +396,26 @@ async def interview(request: Request) -> JSONResponse:
         return JSONResponse(scoring.finalize_proctor(value))
 
     raise gateway.GatewayError("Unknown action", 400)
+
+
+# ---------------------------------------------------------- diagnostics ----
+
+
+@app.get("/provider-test")
+async def provider_test() -> JSONResponse:
+    """One tiny real AI request so the hosting settings can be checked from outside."""
+    try:
+        result = await gateway.provider_probe()
+    except gateway.GatewayError as exc:
+        return JSONResponse({"ok": False, "error": exc.message})
+    return JSONResponse({"ok": True, **result})
+
+
+@app.get("/provider-models")
+async def provider_models_route() -> JSONResponse:
+    """The model names the configured AI key can actually use."""
+    try:
+        models = await gateway.provider_models()
+    except gateway.GatewayError as exc:
+        return JSONResponse({"ok": False, "error": exc.message})
+    return JSONResponse({"ok": True, "models": models})
