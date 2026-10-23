@@ -104,6 +104,8 @@ function Settings() {
         </div>
       </div>
 
+      <PasswordCard />
+
       <div className="surface space-y-3 p-6">
         <h2 className="font-semibold">Account & privacy</h2>
         <div className="flex flex-wrap gap-3">
