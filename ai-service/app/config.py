@@ -38,6 +38,12 @@ else:
     EMBED_MODEL = _get("AI_EMBED_MODEL", "google/gemini-embedding-2")
     REASONING_EFFORT = ""
 
+# Backup chat models, tried in order when the main one is busy or unavailable.
+_fallbacks = _get("AI_CHAT_MODEL_FALLBACKS")
+if not _fallbacks and AI_PROVIDER == "gemini":
+    _fallbacks = "gemini-3.7-flash,gemini-3.5-flash,gemini-2.5-flash,gemini-2.5-flash-lite"
+CHAT_MODEL_FALLBACKS = [m.strip() for m in _fallbacks.split(",") if m.strip() and m.strip() != CHAT_MODEL]
+
 # Backend used for session verification and RLS-scoped data access.
 SUPABASE_URL = _get("SUPABASE_URL")
 SUPABASE_KEY = _get("SUPABASE_PUBLISHABLE_KEY")
