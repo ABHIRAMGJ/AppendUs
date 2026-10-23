@@ -90,7 +90,22 @@ def _model_payload(system: str, messages: list[dict[str, Any]]) -> list[dict[str
     return ([{"role": "system", "content": system}] if system else []) + messages
 
 
-_RETRYABLE = {429, 500, 502, 503, 529}
+_RETRYABLE = {429, 500, 502, 503, 504, 529}
+
+# A stuck model must not hang the request: give up on it and move to the backup.
+ATTEMPT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
+_SLOW = "The AI model took too long to answer."
+
+
+async def _post(path: str, payload: dict[str, Any]) -> httpx.Response:
+    try:
+        return await client().post(
+            f"{config.GATEWAY_BASE}{path}", headers=_headers(), json=payload, timeout=ATTEMPT_TIMEOUT
+        )
+    except httpx.TimeoutException as exc:
+        raise GatewayError(_SLOW, 504) from exc
+    except httpx.HTTPError as exc:
+        raise GatewayError("Could not reach the AI provider.", 502) from exc
 
 
 def _chat_models() -> list[str]:
@@ -119,8 +134,10 @@ async def stream_text(system: str, messages: list[dict[str, Any]]) -> AsyncItera
         if config.REASONING_EFFORT:
             payload["reasoning_effort"] = config.REASONING_EFFORT
         try:
+            sent_any = False
             async with client().stream(
-                "POST", f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
+                "POST", f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload,
+                timeout=ATTEMPT_TIMEOUT,
             ) as res:
                 if res.status_code != 200:
                     body = (await res.aread()).decode("utf-8", "replace")[:600]
@@ -138,8 +155,14 @@ async def stream_text(system: str, messages: list[dict[str, Any]]) -> AsyncItera
                     for choice in chunk.get("choices") or []:
                         delta = (choice.get("delta") or {}).get("content")
                         if delta:
+                            sent_any = True
                             yield delta
             return
+        except httpx.TimeoutException as exc:
+            last_error = GatewayError(_SLOW, 504)
+            if not sent_any and index + 1 < len(models):
+                continue
+            raise last_error from exc
         except GatewayError as exc:
             last_error = exc
             if index + 1 < len(models) and _is_retryable(exc):
@@ -197,9 +220,13 @@ async def complete_json(
             if config.REASONING_EFFORT:
                 payload["reasoning_effort"] = config.REASONING_EFFORT
 
-            res = await client().post(
-                f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
-            )
+            try:
+                res = await _post("/chat/completions", payload)
+            except GatewayError as exc:
+                model_error = exc
+                if index + 1 < len(models) and _is_retryable(exc):
+                    continue
+                raise
             if res.status_code == 200:
                 break
             model_error = GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
@@ -234,13 +261,13 @@ async def embed(texts: Sequence[str]) -> list[list[float]]:
         res = await client().post(
             f"{config.GATEWAY_BASE}/embeddings",
             headers=_headers(),
-            json={"model": config.EMBED_MODEL, "input": batch},
+            json={"model": config.EMBED_MODEL, "input": batch, "dimensions": config.EMBED_DIMS},
         )
         if res.status_code != 200:
             raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
         ordered: list[list[float] | None] = [None] * len(batch)
-        for item in res.json().get("data", []):
-            index = item.get("index")
+        for position, item in enumerate(res.json().get("data", [])):
+            index = item.get("index", position)
             if isinstance(index, int) and 0 <= index < len(batch):
                 ordered[index] = item.get("embedding")
         for value in ordered:
@@ -255,15 +282,17 @@ async def provider_probe() -> dict[str, Any]:
     models = _chat_models()
     last_error: GatewayError | None = None
     for index, model in enumerate(models):
-        res = await client().post(
-            f"{config.GATEWAY_BASE}/chat/completions",
-            headers=_headers(),
-            json={
+        try:
+            res = await _post("/chat/completions", {
                 "model": model,
                 "max_tokens": 8,
                 "messages": [{"role": "user", "content": "Reply with the single word OK."}],
-            },
-        )
+            })
+        except GatewayError as exc:
+            last_error = exc
+            if index + 1 < len(models):
+                continue
+            raise
         if res.status_code == 200:
             return {"provider": config.AI_PROVIDER, "model": model, "accepted": True}
         last_error = GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)

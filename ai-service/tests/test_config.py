@@ -10,11 +10,11 @@ def test_render_explicit_gemini_overrides_gateway(monkeypatch):
         env.setenv("AI_PROVIDER", "gemini")
         env.setenv("LOVABLE_API_KEY", "test-gateway")
         env.setenv("GEMINI_API_KEY", "test-gemini")
-        env.delenv("AI_CHAT_MODEL", raising=False)
+        env.delenv("AI_MODEL", raising=False)
         env.delenv("AI_GATEWAY_BASE", raising=False)
         current = importlib.reload(config)
         assert current.AI_PROVIDER == "gemini"
-        assert current.CHAT_MODEL == "gemini-3.8-flash"
+        assert current.CHAT_MODEL == "gemini-2.5-flash"
         assert current.GATEWAY_KEY == "test-gemini"
         assert current.GATEWAY_BASE == "https://generativelanguage.googleapis.com/v1beta/openai"
     importlib.reload(config)
@@ -24,7 +24,7 @@ def test_explicit_gemini_model_override_is_preserved(monkeypatch):
     with monkeypatch.context() as env:
         env.setenv("AI_PROVIDER", "gemini")
         env.setenv("GEMINI_API_KEY", "test-gemini")
-        env.setenv("AI_CHAT_MODEL", "custom-supported-model")
+        env.setenv("AI_MODEL", "custom-supported-model")
         current = importlib.reload(config)
         assert current.CHAT_MODEL == "custom-supported-model"
     importlib.reload(config)

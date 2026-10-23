@@ -58,11 +58,15 @@ class FakeClient:
         assert self.outcomes, "more requests than scripted outcomes"
         return self.outcomes.pop(0)
 
-    def stream(self, method: str, url: str, headers: dict, json: dict) -> FakeStream:
+    def stream(self, method: str, url: str, headers: dict, json: dict, timeout=None) -> FakeStream:
         status, data = self._next(json)
         return FakeStream(FakeResponse(status, json_module.dumps(data) if isinstance(data, dict) else ""), data if isinstance(data, list) else None)
 
-    async def post(self, url: str, headers: dict, json: dict) -> FakeResponse:
+    async def post(self, url: str, headers: dict, json: dict, timeout=None) -> FakeResponse:
+        if status_hang := getattr(self, "hang_models", None):
+            if json.get("model") in status_hang:
+                import httpx
+                raise httpx.ReadTimeout("stuck")
         status, data = self._next(json)
         if isinstance(data, dict):
             return FakeResponse(status, payload=data)
@@ -153,3 +157,12 @@ def test_gemini_default_fallbacks_are_set() -> None:
     if config.AI_PROVIDER == "gemini":
         assert config.CHAT_MODEL_FALLBACKS
         assert config.CHAT_MODEL not in config.CHAT_MODEL_FALLBACKS
+
+
+def test_stuck_main_model_falls_back_instead_of_hanging(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = FakeClient([(200, {"choices": [{"message": {"content": "OK"}}]})])
+    fake.hang_models = {"main-model"}
+    _use_client(monkeypatch, fake)
+
+    result = asyncio.run(gateway.provider_probe())
+    assert result["model"] == "backup-one"

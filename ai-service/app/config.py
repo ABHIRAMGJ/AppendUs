@@ -20,7 +20,8 @@ if _provider == "gemini" or (not _provider and _gemini_key and not _gateway_key)
     AI_PROVIDER = "gemini"
     GATEWAY_BASE = _get("AI_GATEWAY_BASE", "https://generativelanguage.googleapis.com/v1beta/openai")
     GATEWAY_KEY = _gemini_key
-    CHAT_MODEL = _get("AI_CHAT_MODEL", "gemini-3.8-flash")
+    # AI_MODEL (not the older AI_CHAT_MODEL) so a stale hosting override of a slow model is ignored.
+    CHAT_MODEL = _get("AI_MODEL", "gemini-2.5-flash")
     EMBED_MODEL = _get("AI_EMBED_MODEL", "gemini-embedding-001")
     REASONING_EFFORT = ""
 elif _gateway_key:
@@ -39,9 +40,9 @@ else:
     REASONING_EFFORT = ""
 
 # Backup chat models, tried in order when the main one is busy or unavailable.
-_fallbacks = _get("AI_CHAT_MODEL_FALLBACKS")
+_fallbacks = _get("AI_MODEL_FALLBACKS")
 if not _fallbacks and AI_PROVIDER == "gemini":
-    _fallbacks = "gemini-3.7-flash,gemini-3.5-flash,gemini-2.5-flash,gemini-2.5-flash-lite"
+    _fallbacks = "gemini-2.5-flash-lite,gemini-3.1-flash-lite,gemini-3.5-flash"
 CHAT_MODEL_FALLBACKS = [m.strip() for m in _fallbacks.split(",") if m.strip() and m.strip() != CHAT_MODEL]
 
 # Backend used for session verification and RLS-scoped data access.
@@ -49,5 +50,6 @@ SUPABASE_URL = _get("SUPABASE_URL")
 SUPABASE_KEY = _get("SUPABASE_PUBLISHABLE_KEY")
 
 EMBED_BATCH = 16
+EMBED_DIMS = 3072  # must match vector(3072) on public.resume_chunks
 MAX_RESUME_CHARS = 30000
 MAX_CHUNKS = 60

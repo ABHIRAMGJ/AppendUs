@@ -31,7 +31,7 @@ export function ScrollFx() {
       (entries) =>
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            e.target.classList.add("fx-in");
+            (e.target as HTMLElement).dataset.fx = "in";
             io.unobserve(e.target);
           }
         }),
@@ -39,10 +39,8 @@ export function ScrollFx() {
     );
     els.forEach((el, i) => {
       if (el.getBoundingClientRect().top < window.innerHeight * 0.9) return;
-      el.classList.add("fx-reveal");
-      el.querySelectorAll<HTMLElement>(":scope .grid > *").forEach((c, j) =>
-        c.style.setProperty("--d", `${Math.min(j, 8) * 80}ms`),
-      );
+      // Data attributes (not class/style) so React hydration never sees changed props.
+      el.dataset.fx = "reveal";
       io.observe(el);
       void i;
     });
