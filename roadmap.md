@@ -9,5 +9,5 @@
 - Code sync with GitHub confirmed live — repository holds every commit plus a sync-added README.
 
 ## Pending live deployment
-- Replace the retired Gemini model with gemini-3.8-flash in Python defaults and the Render blueprint; verify the updated deployment's provider-test returns a real answer.
+- Backup models added: when the main Gemini model is busy, the service automatically tries gemini-3.7-flash, gemini-3.5-flash, gemini-2.5-flash, gemini-2.5-flash-lite (chat, JSON and the live self-check). Baked into render.yaml; 61 tests pass. Waiting for Render's auto-deploy, then re-test the live service.
 - Verify a real AI answer on https://appendus-ai-service.onrender.com, then configure AI_SERVICE_URL and publish the app connection.

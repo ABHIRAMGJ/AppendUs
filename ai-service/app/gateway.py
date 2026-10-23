@@ -90,36 +90,62 @@ def _model_payload(system: str, messages: list[dict[str, Any]]) -> list[dict[str
     return ([{"role": "system", "content": system}] if system else []) + messages
 
 
-async def stream_text(system: str, messages: list[dict[str, Any]]) -> AsyncIterator[str]:
-    """Yield answer text as it is produced by the model."""
-    payload: dict[str, Any] = {
-        "model": config.CHAT_MODEL,
-        "stream": True,
-        "messages": _model_payload(system, messages),
-    }
-    if config.REASONING_EFFORT:
-        payload["reasoning_effort"] = config.REASONING_EFFORT
+_RETRYABLE = {429, 500, 502, 503, 529}
 
-    async with client().stream(
-        "POST", f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
-    ) as res:
-        if res.status_code != 200:
-            body = (await res.aread()).decode("utf-8", "replace")[:600]
-            raise GatewayError(provider_detail(res.status_code, body), res.status_code)
-        async for line in res.aiter_lines():
-            if not line.startswith("data:"):
+
+def _chat_models() -> list[str]:
+    """Main model first, then each configured backup."""
+    return [config.CHAT_MODEL, *config.CHAT_MODEL_FALLBACKS]
+
+
+def _is_retryable(err: "GatewayError") -> bool:
+    """Busy/overloaded answers are worth retrying on a backup model; bad keys are not."""
+    if err.status in _RETRYABLE:
+        return True
+    text = err.message.lower()
+    return "high demand" in text or "overloaded" in text or "temporarily unavailable" in text
+
+
+async def stream_text(system: str, messages: list[dict[str, Any]]) -> AsyncIterator[str]:
+    """Yield answer text as it is produced by the model, falling back to backup models."""
+    models = _chat_models()
+    last_error: GatewayError | None = None
+    for index, model in enumerate(models):
+        payload: dict[str, Any] = {
+            "model": model,
+            "stream": True,
+            "messages": _model_payload(system, messages),
+        }
+        if config.REASONING_EFFORT:
+            payload["reasoning_effort"] = config.REASONING_EFFORT
+        try:
+            async with client().stream(
+                "POST", f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
+            ) as res:
+                if res.status_code != 200:
+                    body = (await res.aread()).decode("utf-8", "replace")[:600]
+                    raise GatewayError(provider_detail(res.status_code, body), res.status_code)
+                async for line in res.aiter_lines():
+                    if not line.startswith("data:"):
+                        continue
+                    data = line[5:].strip()
+                    if not data or data == "[DONE]":
+                        continue
+                    try:
+                        chunk = json.loads(data)
+                    except json.JSONDecodeError:
+                        continue
+                    for choice in chunk.get("choices") or []:
+                        delta = (choice.get("delta") or {}).get("content")
+                        if delta:
+                            yield delta
+            return
+        except GatewayError as exc:
+            last_error = exc
+            if index + 1 < len(models) and _is_retryable(exc):
                 continue
-            data = line[5:].strip()
-            if not data or data == "[DONE]":
-                continue
-            try:
-                chunk = json.loads(data)
-            except json.JSONDecodeError:
-                continue
-            for choice in chunk.get("choices") or []:
-                delta = (choice.get("delta") or {}).get("content")
-                if delta:
-                    yield delta
+            raise
+    raise last_error or GatewayError("The AI service had a problem. Please try again.", 502)
 
 
 async def complete_json(
@@ -142,36 +168,46 @@ async def complete_json(
         notes = base if attempt == 0 else base + [
             {"role": "user", "content": f"Return only a JSON object that matches the schema. Problem: {last_error}"}
         ]
-        if config.AI_PROVIDER == "gemini":
-            # Gemini's compatible endpoint only promises JSON mode, not strict schemas:
-            # describe the schema in the prompt and keep the jsonschema retry loop.
-            schema_text = json.dumps(schema)
-            payload: dict[str, Any] = {
-                "model": config.CHAT_MODEL,
-                "messages": _model_payload(
-                    (system + "\n\n" if system else "")
-                    + f"Respond with a single JSON object that fits this JSON Schema:\n{schema_text}",
-                    notes,
-                ),
-                "response_format": {"type": "json_object"},
-            }
-        else:
-            payload = {
-                "model": config.CHAT_MODEL,
-                "messages": _model_payload(system, notes),
-                "response_format": {
-                    "type": "json_schema",
-                    "json_schema": {"name": name, "strict": True, "schema": schema},
-                },
-            }
-        if config.REASONING_EFFORT:
-            payload["reasoning_effort"] = config.REASONING_EFFORT
+        res: httpx.Response | None = None
+        model_error: GatewayError | None = None
+        models = _chat_models()
+        for index, model in enumerate(models):
+            if config.AI_PROVIDER == "gemini":
+                # Gemini's compatible endpoint only promises JSON mode, not strict schemas:
+                # describe the schema in the prompt and keep the jsonschema retry loop.
+                schema_text = json.dumps(schema)
+                payload: dict[str, Any] = {
+                    "model": model,
+                    "messages": _model_payload(
+                        (system + "\n\n" if system else "")
+                        + f"Respond with a single JSON object that fits this JSON Schema:\n{schema_text}",
+                        notes,
+                    ),
+                    "response_format": {"type": "json_object"},
+                }
+            else:
+                payload = {
+                    "model": model,
+                    "messages": _model_payload(system, notes),
+                    "response_format": {
+                        "type": "json_schema",
+                        "json_schema": {"name": name, "strict": True, "schema": schema},
+                    },
+                }
+            if config.REASONING_EFFORT:
+                payload["reasoning_effort"] = config.REASONING_EFFORT
 
-        res = await client().post(
-            f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
-        )
-        if res.status_code != 200:
-            raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+            res = await client().post(
+                f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
+            )
+            if res.status_code == 200:
+                break
+            model_error = GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+            if index + 1 < len(models) and _is_retryable(model_error):
+                continue
+            raise model_error
+        else:
+            raise model_error or GatewayError("The AI service had a problem. Please try again.", 502)
 
         try:
             content = res.json()["choices"][0]["message"]["content"] or ""
@@ -216,18 +252,25 @@ async def embed(texts: Sequence[str]) -> list[list[float]]:
 
 async def provider_probe() -> dict[str, Any]:
     """One tiny real request so the hosting settings can be checked from outside."""
-    res = await client().post(
-        f"{config.GATEWAY_BASE}/chat/completions",
-        headers=_headers(),
-        json={
-            "model": config.CHAT_MODEL,
-            "max_tokens": 8,
-            "messages": [{"role": "user", "content": "Reply with the single word OK."}],
-        },
-    )
-    if res.status_code != 200:
-        raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
-    return {"provider": config.AI_PROVIDER, "model": config.CHAT_MODEL, "accepted": True}
+    models = _chat_models()
+    last_error: GatewayError | None = None
+    for index, model in enumerate(models):
+        res = await client().post(
+            f"{config.GATEWAY_BASE}/chat/completions",
+            headers=_headers(),
+            json={
+                "model": model,
+                "max_tokens": 8,
+                "messages": [{"role": "user", "content": "Reply with the single word OK."}],
+            },
+        )
+        if res.status_code == 200:
+            return {"provider": config.AI_PROVIDER, "model": model, "accepted": True}
+        last_error = GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+        if index + 1 < len(models) and _is_retryable(last_error):
+            continue
+        raise last_error
+    raise last_error or GatewayError("The AI service had a problem. Please try again.", 502)
 
 
 async def provider_models() -> list[str]:
