@@ -12,6 +12,7 @@
 - App connected to the live AI service (AI_SERVICE_URL set).
 
 ## Pending live deployment
+- Configure the user-selected Gemini 3.8 Flash replacement, run backend tests, and verify signed-in database reads. Live AI remains blocked until Render changes AI_MODEL to the replacement; no Render management connection is available here.
 - Live verification: Render now reports gemini-2.5-flash. Signed-in sample resume reached model generation in 5.6 seconds; direct vector search returned the sample evidence successfully (HTTP 200, similarity 1). Diagnostic rows removed afterward. Full resume scoring and reply speed blocked: Google returns 404 because this model is no longer available to new users. Await an authorized supported model selection and Render settings update before retesting.
 - Stuck AI model fix is deployed with the updated model; successful live reply speed remains unverified because Google rejects that model before generation.
 - Full test pass (all pages, login, hydration fix on home page).

@@ -21,7 +21,7 @@ if _provider == "gemini" or (not _provider and _gemini_key and not _gateway_key)
     GATEWAY_BASE = _get("AI_GATEWAY_BASE", "https://generativelanguage.googleapis.com/v1beta/openai")
     GATEWAY_KEY = _gemini_key
     # AI_MODEL (not the older AI_CHAT_MODEL) so a stale hosting override of a slow model is ignored.
-    CHAT_MODEL = _get("AI_MODEL", "gemini-2.5-flash")
+    CHAT_MODEL = _get("AI_MODEL", "gemini-3.8-flash")
     EMBED_MODEL = _get("AI_EMBED_MODEL", "gemini-embedding-001")
     REASONING_EFFORT = ""
 elif _gateway_key:
