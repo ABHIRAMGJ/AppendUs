@@ -19,6 +19,7 @@ function sourceFiles(dir: string): string[] {
 
 describe("AI requests go to the Python service", () => {
   it("uses the local service when no address is configured", () => {
+    delete process.env["AI_SERVICE_URL"];
     expect(aiServiceUrl()).toBe("http://127.0.0.1:8100");
   });
 

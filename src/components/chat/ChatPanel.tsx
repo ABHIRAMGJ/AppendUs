@@ -106,8 +106,8 @@ export function ChatPanel(props: ChatPanelProps) {
               description={props.emptyDescription}
             />
           ) : (
-            messages.map((m) => (
-              <Message from={m.role} key={m.id}>
+            messages.map((m, idx) => (
+              <Message from={m.role} key={`${m.id || "msg"}-${idx}`}>
                 <MessageContent>
                   {m.parts.map((p, i) =>
                     p.type === "text" ? (

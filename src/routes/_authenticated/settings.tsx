@@ -104,6 +104,8 @@ function Settings() {
         </div>
       </div>
 
+      <PasswordCard />
+
       <div className="surface space-y-3 p-6">
         <h2 className="font-semibold">Account & privacy</h2>
         <div className="flex flex-wrap gap-3">
@@ -121,5 +123,50 @@ function Settings() {
         </div>
       </div>
     </div>
+  );
+}
+
+function PasswordCard() {
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [current, setCurrent] = useState("");
+  const [needCurrent, setNeedCurrent] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (pw.length < 8) { toast.error("Password must be at least 8 characters"); return; }
+    if (pw !== pw2) { toast.error("Passwords don't match"); return; }
+    setBusy(true);
+    const attrs = needCurrent && current ? { password: pw, current_password: current } : { password: pw };
+    const { error } = await supabase.auth.updateUser(attrs as { password: string });
+    setBusy(false);
+    if (error) {
+      if (/current password/i.test(error.message)) {
+        setNeedCurrent(true);
+        toast.error("Enter your current password too. If you never had one, use \"Forgot password?\" on the login page.");
+        return;
+      }
+      if (/same|different from the old/i.test(error.message)) { toast.error("Choose a password different from your current one."); return; }
+      toast.error(error.message);
+      return;
+    }
+    setPw(""); setPw2(""); setCurrent(""); setNeedCurrent(false);
+    toast.success("Password saved — you can now log in with your email and password.");
+  }
+
+  return (
+    <form onSubmit={submit} className="surface space-y-4 p-6">
+      <h2 className="font-semibold">Password</h2>
+      <p className="-mt-2 text-sm text-muted-foreground">Set or change the password used for email login. Signed up with Google? Set one here to log in with email too.</p>
+      {needCurrent && (
+        <div className="space-y-1.5"><Label htmlFor="cur-pw">Current password</Label><Input id="cur-pw" type="password" required value={current} onChange={(e) => setCurrent(e.target.value)} /></div>
+      )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5"><Label htmlFor="new-pw">New password</Label><Input id="new-pw" type="password" minLength={8} required value={pw} onChange={(e) => setPw(e.target.value)} placeholder="At least 8 characters" /></div>
+        <div className="space-y-1.5"><Label htmlFor="new-pw2">Confirm password</Label><Input id="new-pw2" type="password" minLength={8} required value={pw2} onChange={(e) => setPw2(e.target.value)} /></div>
+      </div>
+      <Button type="submit" variant="hero" disabled={busy}>{busy ? "Saving..." : "Save password"}</Button>
+    </form>
   );
 }

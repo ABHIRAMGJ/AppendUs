@@ -85,11 +85,16 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Reset link sent — check your email.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password });
+        const { error } = await supabase.auth.signInWithPassword({ email: form.email.trim(), password: form.password });
         if (error) {
           if (/confirm/i.test(error.message)) {
             setSent(form.email);
             throw new Error("Please verify your email first. Check your inbox and spam folder, or resend the link.");
+          }
+          if (/invalid login credentials/i.test(error.message)) {
+            throw new Error(
+              "Wrong email or password. If you joined with Google, use \"Continue with Google\" — or tap \"Forgot password?\" to create a password.",
+            );
           }
           throw error;
         }
