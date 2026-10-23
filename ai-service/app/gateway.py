@@ -1,7 +1,7 @@
 """Client for the Lovable AI Gateway: streaming chat, strict JSON and embeddings."""
 
 import json
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncIterator, Mapping, Sequence
 from typing import Any
 
 import httpx
@@ -29,6 +29,30 @@ class GatewayError(Exception):
 
 def friendly_message(status: int) -> str:
     return _FRIENDLY.get(status, "The AI service had a problem. Please try again.")
+
+
+def provider_detail(status: int, body: str) -> str:
+    """Friendly wording plus the provider's own short reason, with secrets removed."""
+    try:
+        data = json.loads(body)
+    except (json.JSONDecodeError, TypeError):
+        data = None
+    if isinstance(data, Mapping):
+        err = data.get("error")
+        if isinstance(err, Mapping):
+            detail = str(err.get("message") or err.get("status") or "")
+        elif isinstance(err, str):
+            detail = err
+        else:
+            detail = str(data.get("message") or data.get("detail") or "")
+    else:
+        detail = body
+    detail = " ".join(detail.split())[:180]
+    for secret in (config.GATEWAY_KEY, config.SUPABASE_KEY):
+        if secret:
+            detail = detail.replace(secret, "[redacted]")
+    base = friendly_message(status)
+    return base if not detail or detail == base else f"{base} Provider says: {detail}"
 
 
 _client: httpx.AsyncClient | None = None
@@ -80,8 +104,8 @@ async def stream_text(system: str, messages: list[dict[str, Any]]) -> AsyncItera
         "POST", f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
     ) as res:
         if res.status_code != 200:
-            body = (await res.aread()).decode("utf-8", "replace")[:400]
-            raise GatewayError(friendly_message(res.status_code), res.status_code)
+            body = (await res.aread()).decode("utf-8", "replace")[:600]
+            raise GatewayError(provider_detail(res.status_code, body), res.status_code)
         async for line in res.aiter_lines():
             if not line.startswith("data:"):
                 continue
@@ -147,7 +171,7 @@ async def complete_json(
             f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
         )
         if res.status_code != 200:
-            raise GatewayError(friendly_message(res.status_code), res.status_code)
+            raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
 
         try:
             content = res.json()["choices"][0]["message"]["content"] or ""
@@ -177,7 +201,7 @@ async def embed(texts: Sequence[str]) -> list[list[float]]:
             json={"model": config.EMBED_MODEL, "input": batch},
         )
         if res.status_code != 200:
-            raise GatewayError(friendly_message(res.status_code), res.status_code)
+            raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
         ordered: list[list[float] | None] = [None] * len(batch)
         for item in res.json().get("data", []):
             index = item.get("index")
