@@ -12,9 +12,10 @@
 - App connected to the live AI service (AI_SERVICE_URL set).
 
 ## Pending live deployment
-- Resume analysis fix (embedding size 3072 + Gemini order) and faster model gemini-2.5-flash via new AI_MODEL setting. Waiting on user: Render → Manual Deploy → Deploy latest commit; then re-test live chat, career plan, resume.
-- Stuck AI model fix: each model gets 60s, then the backup is tried (chat, JSON, self-check). 62 tests pass. Waiting on Render auto-deploy, then re-test resume analysis + career plan live.
+- Live verification: Render now reports gemini-2.5-flash. Signed-in sample resume reached model generation in 5.6 seconds; direct vector search returned the sample evidence successfully (HTTP 200, similarity 1). Diagnostic rows removed afterward. Full resume scoring and reply speed blocked: Google returns 404 because this model is no longer available to new users. Await an authorized supported model selection and Render settings update before retesting.
+- Stuck AI model fix is deployed with the updated model; successful live reply speed remains unverified because Google rejects that model before generation.
 - Full test pass (all pages, login, hydration fix on home page).
-- Backup models added: when the main Gemini model is busy, the service automatically tries gemini-3.7-flash, gemini-3.5-flash, gemini-2.5-flash, gemini-2.5-flash-lite (chat, JSON and the live self-check). Baked into render.yaml; 61 tests pass. Waiting for Render's auto-deploy, then re-test the live service.
+- Backup models handle busy responses, but intentionally do not retry a terminal 404 model rejection; the primary model setting must be corrected before live testing resumes.
+- Recorded graphlib page error investigated: likely Mermaid integration, but not reproduced during this signed-in resume check; no speculative dependency change made.
 - Publish the app (user).
 - Blocked: email codes only reach gjabhiram001@gmail.com until the user verifies a domain in Resend and gives the sender address.
