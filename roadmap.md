@@ -12,6 +12,7 @@
 - App connected to the live AI service (AI_SERVICE_URL set).
 
 ## Pending live deployment
+- Current requested verification: Render now reports gemini-2.5-flash, but /provider-test returns Google 404 (model no longer available to new users). Reply speed cannot be validated until an available model is selected. Check resume search independently through the signed-in UI.
 - Resume analysis fix (embedding size 3072 + Gemini order) and faster model gemini-2.5-flash via new AI_MODEL setting. Waiting on user: Render → Manual Deploy → Deploy latest commit; then re-test live chat, career plan, resume.
 - Stuck AI model fix: each model gets 60s, then the backup is tried (chat, JSON, self-check). 62 tests pass. Waiting on Render auto-deploy, then re-test resume analysis + career plan live.
 - Full test pass (all pages, login, hydration fix on home page).
