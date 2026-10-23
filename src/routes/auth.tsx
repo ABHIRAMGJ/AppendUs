@@ -236,8 +236,8 @@ function AuthPage() {
                   <div className="my-6 flex items-center gap-3 text-xs text-muted-foreground">
                     <span className="h-px flex-1 bg-border" /> Or continue with <span className="h-px flex-1 bg-border" />
                   </div>
-                  <Button variant="outline" className="h-11 w-full" onClick={google}>
-                    <GoogleIcon /> Continue with Google
+                  <Button variant="outline" className="h-11 w-full" onClick={google} disabled={googleBusy}>
+                    <GoogleIcon /> {googleBusy ? "Opening Google..." : "Continue with Google"}
                   </Button>
                 </>
               )}
