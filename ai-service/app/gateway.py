@@ -212,3 +212,32 @@ async def embed(texts: Sequence[str]) -> list[list[float]]:
                 raise GatewayError("The AI service returned an unusable embedding.", 502)
         out.extend(v for v in ordered if v is not None)
     return out
+
+
+async def provider_probe() -> dict[str, Any]:
+    """One tiny real request so the hosting settings can be checked from outside."""
+    res = await client().post(
+        f"{config.GATEWAY_BASE}/chat/completions",
+        headers=_headers(),
+        json={
+            "model": config.CHAT_MODEL,
+            "max_tokens": 8,
+            "messages": [{"role": "user", "content": "Reply with the single word OK."}],
+        },
+    )
+    if res.status_code != 200:
+        raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+    return {"provider": config.AI_PROVIDER, "model": config.CHAT_MODEL, "accepted": True}
+
+
+async def provider_models() -> list[str]:
+    """Model names the configured key can actually use."""
+    res = await client().get(f"{config.GATEWAY_BASE}/models", headers=_headers())
+    if res.status_code != 200:
+        raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+    data = res.json()
+    items = data.get("data") if isinstance(data, Mapping) else None
+    if not isinstance(items, list):
+        items = data.get("models") if isinstance(data, Mapping) else []
+    names = [str(item.get("id") or item.get("name")) for item in items if isinstance(item, Mapping)]
+    return sorted(name for name in names if name and name != "None")[:80]
