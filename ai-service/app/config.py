@@ -42,7 +42,7 @@ else:
 # Backup chat models, tried in order when the main one is busy or unavailable.
 _fallbacks = _get("AI_MODEL_FALLBACKS")
 if not _fallbacks and AI_PROVIDER == "gemini":
-    _fallbacks = "gemini-2.5-flash-lite,gemini-3.1-flash-lite,gemini-3.5-flash"
+    _fallbacks = "gemini-3.1-flash-lite,gemini-3.5-flash"
 CHAT_MODEL_FALLBACKS = [m.strip() for m in _fallbacks.split(",") if m.strip() and m.strip() != CHAT_MODEL]
 
 # Backend used for session verification and RLS-scoped data access.
