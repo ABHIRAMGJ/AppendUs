@@ -168,36 +168,46 @@ async def complete_json(
         notes = base if attempt == 0 else base + [
             {"role": "user", "content": f"Return only a JSON object that matches the schema. Problem: {last_error}"}
         ]
-        if config.AI_PROVIDER == "gemini":
-            # Gemini's compatible endpoint only promises JSON mode, not strict schemas:
-            # describe the schema in the prompt and keep the jsonschema retry loop.
-            schema_text = json.dumps(schema)
-            payload: dict[str, Any] = {
-                "model": config.CHAT_MODEL,
-                "messages": _model_payload(
-                    (system + "\n\n" if system else "")
-                    + f"Respond with a single JSON object that fits this JSON Schema:\n{schema_text}",
-                    notes,
-                ),
-                "response_format": {"type": "json_object"},
-            }
-        else:
-            payload = {
-                "model": config.CHAT_MODEL,
-                "messages": _model_payload(system, notes),
-                "response_format": {
-                    "type": "json_schema",
-                    "json_schema": {"name": name, "strict": True, "schema": schema},
-                },
-            }
-        if config.REASONING_EFFORT:
-            payload["reasoning_effort"] = config.REASONING_EFFORT
+        res: httpx.Response | None = None
+        model_error: GatewayError | None = None
+        models = _chat_models()
+        for index, model in enumerate(models):
+            if config.AI_PROVIDER == "gemini":
+                # Gemini's compatible endpoint only promises JSON mode, not strict schemas:
+                # describe the schema in the prompt and keep the jsonschema retry loop.
+                schema_text = json.dumps(schema)
+                payload: dict[str, Any] = {
+                    "model": model,
+                    "messages": _model_payload(
+                        (system + "\n\n" if system else "")
+                        + f"Respond with a single JSON object that fits this JSON Schema:\n{schema_text}",
+                        notes,
+                    ),
+                    "response_format": {"type": "json_object"},
+                }
+            else:
+                payload = {
+                    "model": model,
+                    "messages": _model_payload(system, notes),
+                    "response_format": {
+                        "type": "json_schema",
+                        "json_schema": {"name": name, "strict": True, "schema": schema},
+                    },
+                }
+            if config.REASONING_EFFORT:
+                payload["reasoning_effort"] = config.REASONING_EFFORT
 
-        res = await client().post(
-            f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
-        )
-        if res.status_code != 200:
-            raise GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+            res = await client().post(
+                f"{config.GATEWAY_BASE}/chat/completions", headers=_headers(), json=payload
+            )
+            if res.status_code == 200:
+                break
+            model_error = GatewayError(provider_detail(res.status_code, res.text[:600]), res.status_code)
+            if index + 1 < len(models) and _is_retryable(model_error):
+                continue
+            raise model_error
+        else:
+            raise model_error or GatewayError("The AI service had a problem. Please try again.", 502)
 
         try:
             content = res.json()["choices"][0]["message"]["content"] or ""
