@@ -14,7 +14,7 @@ def test_render_explicit_gemini_overrides_gateway(monkeypatch):
         env.delenv("AI_GATEWAY_BASE", raising=False)
         current = importlib.reload(config)
         assert current.AI_PROVIDER == "gemini"
-        assert current.CHAT_MODEL == "gemini-2.5-flash"
+        assert current.CHAT_MODEL == "gemini-2.0-flash"
         assert current.GATEWAY_KEY == "test-gemini"
         assert current.GATEWAY_BASE == "https://generativelanguage.googleapis.com/v1beta/openai"
     importlib.reload(config)
