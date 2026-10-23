@@ -12,6 +12,7 @@
 - App connected to the live AI service (AI_SERVICE_URL set).
 
 ## Pending live deployment
+- Pre-publish check: Render now uses Gemini 3.8 Flash, but self-check timed out on it after 60 seconds, then failed on retired first backup gemini-2.5-flash-lite (Google 404). Removed that rejected backup from Python defaults and Blueprint; Render must set AI_MODEL_FALLBACKS=gemini-3.1-flash-lite,gemini-3.5-flash before fresh end-to-end tests. Publishing deferred until AI success is verified.
 - User-selected Gemini 3.8 Flash configured in Python default and Render Blueprint. All 63 Python tests pass; signed-in Admin reads all 10 data groups, and dashboard/jobs/projects/settings/resume load without runtime errors. Fixed two PageFx TypeScript errors. Live AI remains blocked until Render sets AI_MODEL=gemini-3.8-flash and redeploys; no Render management connection is available here.
 - Live verification: Render now reports gemini-2.5-flash. Signed-in sample resume reached model generation in 5.6 seconds; direct vector search returned the sample evidence successfully (HTTP 200, similarity 1). Diagnostic rows removed afterward. Full resume scoring and reply speed blocked: Google returns 404 because this model is no longer available to new users. Await an authorized supported model selection and Render settings update before retesting.
 - Stuck AI model fix is deployed with the updated model; successful live reply speed remains unverified because Google rejects that model before generation.

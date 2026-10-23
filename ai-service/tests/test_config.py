@@ -41,6 +41,17 @@ def test_render_model_selection_ignores_legacy_chat_override(monkeypatch):
     importlib.reload(config)
 
 
+def test_default_backups_exclude_rejected_retired_model(monkeypatch):
+    with monkeypatch.context() as env:
+        env.setenv("AI_PROVIDER", "gemini")
+        env.setenv("GEMINI_API_KEY", "test-gemini")
+        env.setenv("AI_MODEL", "gemini-3.8-flash")
+        env.delenv("AI_MODEL_FALLBACKS", raising=False)
+        current = importlib.reload(config)
+        assert current.CHAT_MODEL_FALLBACKS == ["gemini-3.1-flash-lite", "gemini-3.5-flash"]
+    importlib.reload(config)
+
+
 def test_explicit_gemini_does_not_fall_back_to_wrong_key(monkeypatch):
     with monkeypatch.context() as env:
         env.setenv("AI_PROVIDER", "gemini")
