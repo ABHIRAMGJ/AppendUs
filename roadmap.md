@@ -12,6 +12,8 @@
 - App connected to the live AI service (AI_SERVICE_URL set).
 
 ## Pending live deployment
+- Stuck AI model fix: each model gets 60s, then the backup is tried (chat, JSON, self-check). 62 tests pass. Waiting on Render auto-deploy, then re-test resume analysis + career plan live.
+- Full test pass (all pages, login, hydration fix on home page).
 - Backup models added: when the main Gemini model is busy, the service automatically tries gemini-3.7-flash, gemini-3.5-flash, gemini-2.5-flash, gemini-2.5-flash-lite (chat, JSON and the live self-check). Baked into render.yaml; 61 tests pass. Waiting for Render's auto-deploy, then re-test the live service.
 - Publish the app (user).
 - Blocked: email codes only reach gjabhiram001@gmail.com until the user verifies a domain in Resend and gives the sender address.
