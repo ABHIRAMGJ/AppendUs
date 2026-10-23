@@ -20,7 +20,7 @@ if _provider == "gemini" or (not _provider and _gemini_key and not _gateway_key)
     AI_PROVIDER = "gemini"
     GATEWAY_BASE = _get("AI_GATEWAY_BASE", "https://generativelanguage.googleapis.com/v1beta/openai")
     GATEWAY_KEY = _gemini_key
-    CHAT_MODEL = _get("AI_CHAT_MODEL", "gemini-2.5-flash")
+    CHAT_MODEL = _get("AI_CHAT_MODEL", "gemini-2.0-flash")
     EMBED_MODEL = _get("AI_EMBED_MODEL", "gemini-embedding-001")
     REASONING_EFFORT = ""
 elif _gateway_key:
