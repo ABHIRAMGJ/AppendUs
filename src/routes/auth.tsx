@@ -250,7 +250,7 @@ function AuthPage() {
                   {loading
                     ? "Please wait..."
                     : mode === "signup"
-                      ? codeSentTo ? "Verify & Create Account" : "Send Code"
+                      ? codeSentTo ? (linkMode ? "Create Account" : "Verify & Create Account") : "Send Code"
                       : mode === "forgot" ? "Send Reset Link" : "Login"}
                 </Button>
               </form>
