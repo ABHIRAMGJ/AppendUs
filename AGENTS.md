@@ -15,7 +15,7 @@
 - Module list for sidebar and Global Assistant comes from src/lib/platform.ts — single source for what is available vs coming soon.
 - Admin access uses the user_roles table + has_role() in RLS; never store roles on profiles — prevents privilege escalation.
 - Colors only via semantic tokens in src/styles.css with light and .dark values — every page must work in both themes.
-- Every account (email or Google) must verify its email once with our own 6-digit Resend code (src/lib/signup.functions.ts); EmailGate in AppShell blocks the app until a row exists in email_verified, which only server code writes — Google alone does not count as verified.
+- Email ownership is proven once, server-side (src/lib/signup.functions.ts): our 6-digit code when the managed sender can deliver, otherwise Cloud Auth's confirmation link; Google and link-confirmed accounts count via email_confirmed_at (auto-confirm stays off). EmailGate in AppShell blocks the app until a row exists in email_verified, which only server code writes — keeps sign-up working while the sender domain is unverified.
 - The Python AI service deploys to Render via render.yaml (Docker, listens on $PORT); the app reaches it through the AI_SERVICE_URL secret.
 - Render explicitly selects Gemini via AI_PROVIDER; UI chat streams encode provider failures as safe error events because HTTP exception handlers cannot run after streaming starts.
 - Render chat model selection uses AI_MODEL, matching the Python default and Blueprint configuration; legacy AI_CHAT_MODEL cannot override Gemini, preventing stale hosting settings from selecting a retired model.
