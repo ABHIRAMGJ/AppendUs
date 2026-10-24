@@ -37,6 +37,7 @@ import { Route as ApiResumeRouteImport } from './routes/api/resume'
 import { Route as PortfolioUserIdRouteImport } from './routes/portfolio.$userId'
 import { Route as AuthenticatedMentorIndexRouteImport } from './routes/_authenticated/mentor.index'
 import { Route as AuthenticatedMentorThreadIdRouteImport } from './routes/_authenticated/mentor.$threadId'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -182,6 +183,12 @@ const AuthenticatedMentorThreadIdRoute =
     path: '/$threadId',
     getParentRoute: () => AuthenticatedMentorRoute,
   } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/portfolio/$userId': typeof PortfolioUserIdRoute
   '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/mentor/': typeof AuthenticatedMentorIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -239,6 +247,7 @@ export interface FileRoutesByTo {
   '/portfolio/$userId': typeof PortfolioUserIdRoute
   '/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/mentor': typeof AuthenticatedMentorIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -270,6 +279,7 @@ export interface FileRoutesById {
   '/portfolio/$userId': typeof PortfolioUserIdRoute
   '/_authenticated/mentor/$threadId': typeof AuthenticatedMentorThreadIdRoute
   '/_authenticated/mentor/': typeof AuthenticatedMentorIndexRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/portfolio/$userId'
     | '/mentor/$threadId'
     | '/mentor/'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/portfolio/$userId'
     | '/mentor/$threadId'
     | '/mentor'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -359,6 +371,7 @@ export interface FileRouteTypes {
     | '/portfolio/$userId'
     | '/_authenticated/mentor/$threadId'
     | '/_authenticated/mentor/'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -374,6 +387,7 @@ export interface RootRouteChildren {
   ApiQuizRoute: typeof ApiQuizRoute
   ApiResumeRoute: typeof ApiResumeRoute
   PortfolioUserIdRoute: typeof PortfolioUserIdRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -574,6 +588,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMentorThreadIdRouteImport
       parentRoute: typeof AuthenticatedMentorRoute
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -640,6 +661,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiQuizRoute: ApiQuizRoute,
   ApiResumeRoute: ApiResumeRoute,
   PortfolioUserIdRoute: PortfolioUserIdRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
