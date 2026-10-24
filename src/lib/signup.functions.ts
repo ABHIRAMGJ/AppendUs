@@ -45,7 +45,7 @@ async function issueCode(rawEmail: string) {
     attempts: 0,
   });
   if (error) throw new Error("Could not create a code. Please try again.");
-  await sendWithResend(email, code);
+  await sendVerificationEmail(email, code);
 }
 
 async function consumeCode(rawEmail: string, code: string) {
