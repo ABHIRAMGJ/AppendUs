@@ -18,18 +18,28 @@ async function admin() {
   return supabaseAdmin;
 }
 
+class EmailUnavailableError extends Error {}
+
 async function sendVerificationEmail(to: string, code: string) {
   const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
-  const result = await sendTemplateEmail("verification-code", to, {
-    templateData: { code, minutes: CODE_TTL_MINUTES },
-    idempotencyKey: `signup-code-${to}-${code}`,
-  });
+  let result;
+  try {
+    result = await sendTemplateEmail("verification-code", to, {
+      templateData: { code, minutes: CODE_TTL_MINUTES },
+      idempotencyKey: `signup-code-${to}-${code}`,
+    });
+  } catch (err) {
+    // Sender domain not verified yet (or email off): the app falls back to a confirmation link.
+    console.error("verification-code send failed", err);
+    throw new EmailUnavailableError("Email codes are unavailable right now.");
+  }
   if (!result.sent) {
-    throw new Error("We couldn't send the code. Please try again.");
+    throw new Error("We couldn't send the code to this address. Please use a different email.");
   }
 }
 
-async function issueCode(rawEmail: string) {
+/** Returns "code" when the 6-digit email went out, "link" when code emails can't be sent. */
+async function issueCode(rawEmail: string): Promise<"code" | "link"> {
   const db = await admin();
   const email = normaliseEmail(rawEmail);
   const { data: existing } = await db.from("signup_codes").select("sent_at").eq("email", email).maybeSingle();
@@ -45,7 +55,16 @@ async function issueCode(rawEmail: string) {
     attempts: 0,
   });
   if (error) throw new Error("Could not create a code. Please try again.");
-  await sendVerificationEmail(email, code);
+  try {
+    await sendVerificationEmail(email, code);
+    return "code";
+  } catch (err) {
+    if (err instanceof EmailUnavailableError) {
+      await db.from("signup_codes").delete().eq("email", email);
+      return "link";
+    }
+    throw err;
+  }
 }
 
 async function consumeCode(rawEmail: string, code: string) {
@@ -83,8 +102,8 @@ async function markVerified(userId: string) {
 export const sendSignupCode = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ email: emailSchema }).parse(d))
   .handler(async ({ data }) => {
-    await issueCode(data.email);
-    return { ok: true };
+    const mode = await issueCode(data.email);
+    return { ok: true, mode };
   });
 
 export const verifyCodeAndCreateAccount = createServerFn({ method: "POST" })
@@ -122,12 +141,21 @@ export const verifyCodeAndCreateAccount = createServerFn({ method: "POST" })
 export const getMyVerification = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const email = String(context.claims.email ?? "");
     const { data } = await context.supabase
       .from("email_verified")
       .select("user_id")
       .eq("user_id", context.userId)
       .maybeSingle();
-    return { verified: !!data, email: String(context.claims.email ?? "") };
+    if (data) return { verified: true, email };
+    // Email already confirmed by sign-in itself (Google, or the confirmation link): record it once.
+    const db = await admin();
+    const { data: found } = await db.auth.admin.getUserById(context.userId);
+    if (found.user?.email_confirmed_at) {
+      await markVerified(context.userId);
+      return { verified: true, email };
+    }
+    return { verified: false, email };
   });
 
 export const sendMyCode = createServerFn({ method: "POST" })
@@ -135,7 +163,8 @@ export const sendMyCode = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const email = String(context.claims.email ?? "");
     if (!email) throw new Error("Your account has no email address.");
-    await issueCode(email);
+    const mode = await issueCode(email);
+    if (mode === "link") throw new Error("We can't email codes right now. Please try again later.");
     return { ok: true };
   });
 
