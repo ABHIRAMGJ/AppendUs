@@ -29,7 +29,7 @@ function VerificationCodeEmail({ code = '123456', minutes = 10 }: VerificationCo
 
 export const template = {
   component: VerificationCodeEmail,
-  subject: (data: Record<string, any>) => `${data.code ?? '123456'} is your AppendUs code`,
+  subject: (data: Record<string, any>) => `${data['code'] ?? '123456'} is your AppendUs code`,
   displayName: 'Verification code',
   previewData: { code: '123456', minutes: 10 },
 } satisfies TemplateEntry
