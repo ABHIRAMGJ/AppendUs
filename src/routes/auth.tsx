@@ -46,6 +46,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
   const [codeSentTo, setCodeSentTo] = useState<string | null>(null);
+  const [linkMode, setLinkMode] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", code: "", confirm: "" });
   const [googleBusy, setGoogleBusy] = useState(false);
   const sendCode = useServerFn(sendSignupCode);
@@ -84,9 +85,27 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup" && !codeSentTo) {
-        await sendCode({ data: { email: form.email } });
+        const res = await sendCode({ data: { email: form.email } });
         setCodeSentTo(form.email);
-        toast.success("We emailed you a 6-digit code.");
+        if (res.mode === "link") {
+          setLinkMode(true);
+          toast.success("Choose a password — we'll email you a confirmation link.");
+        } else {
+          setLinkMode(false);
+          toast.success("We emailed you a 6-digit code.");
+        }
+      } else if (mode === "signup" && codeSentTo && linkMode) {
+        if (form.password !== form.confirm) throw new Error("Passwords don't match.");
+        const { data, error } = await supabase.auth.signUp({
+          email: codeSentTo.trim(),
+          password: form.password,
+          options: { emailRedirectTo: window.location.origin + "/auth", data: { full_name: form.name } },
+        });
+        if (error) throw error;
+        if (data.user && (data.user.identities?.length ?? 0) === 0) {
+          throw new Error("An account with this email already exists. Please log in.");
+        }
+        setSent(codeSentTo);
       } else if (mode === "signup" && codeSentTo) {
         if (form.password !== form.confirm) throw new Error("Passwords don't match.");
         await createAccount({ data: { email: codeSentTo, code: form.code, password: form.password, name: form.name } });
@@ -194,6 +213,9 @@ function AuthPage() {
                 </div>
                 {mode === "signup" && codeSentTo && (
                   <>
+                    {linkMode ? (
+                      <p className="text-xs text-muted-foreground">After you create the account we'll email a confirmation link to {codeSentTo}. <button type="button" className="text-primary hover:underline" onClick={() => { setCodeSentTo(null); setLinkMode(false); }}>Change email</button></p>
+                    ) : (
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
                         <Label htmlFor="code">6-digit code</Label>
@@ -202,6 +224,7 @@ function AuthPage() {
                       <Input id="code" inputMode="numeric" autoComplete="one-time-code" required maxLength={6} pattern="\d{6}" value={form.code} onChange={set("code")} placeholder="123456" />
                       <p className="text-xs text-muted-foreground">Sent to {codeSentTo}. Check spam too. <button type="button" className="text-primary hover:underline" onClick={() => setCodeSentTo(null)}>Change email</button></p>
                     </div>
+                    )}
                     <div className="space-y-1.5">
                       <Label htmlFor="password">Set a password</Label>
                       <Input id="password" type="password" required minLength={8} value={form.password} onChange={set("password")} placeholder="At least 8 characters" />
