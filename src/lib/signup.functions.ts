@@ -18,26 +18,13 @@ async function admin() {
   return supabaseAdmin;
 }
 
-async function sendWithResend(to: string, code: string) {
-  const key = process.env["RESEND_API_KEY"];
-  if (!key) throw new Error("Email sending is not configured.");
-  const from = process.env["RESEND_FROM"] ?? "AppendUs <onboarding@resend.dev>";
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject: `${code} is your AppendUs code`,
-      html: `<div style="font-family:Arial,sans-serif;background:#ffffff;padding:24px"><h2 style="color:#4f46e5">AppendUs</h2><p>Your verification code is:</p><p style="font-size:32px;font-weight:bold;letter-spacing:6px">${code}</p><p>It expires in ${CODE_TTL_MINUTES} minutes. If you didn't ask for this, ignore this email.</p></div>`,
-    }),
+async function sendVerificationEmail(to: string, code: string) {
+  const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+  const result = await sendTemplateEmail("verification-code", to, {
+    templateData: { code, minutes: CODE_TTL_MINUTES },
+    idempotencyKey: `signup-code-${to}-${code}`,
   });
-  if (!res.ok) {
-    const body = await res.text();
-    console.error(`Resend failed [${res.status}]: ${body}`);
-    if (res.status === 403) {
-      throw new Error("We couldn't email this address yet — the sender domain still needs to be verified in Resend.");
-    }
+  if (!result.sent) {
     throw new Error("We couldn't send the code. Please try again.");
   }
 }
